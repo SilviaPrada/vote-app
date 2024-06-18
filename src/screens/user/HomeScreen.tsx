@@ -5,6 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigations/user/StackNavigator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/FontAwesome'; // Import Icon from react-native-vector-icons
+import BottomTabNavigator from '../../navigations/user/BottomTabNavigator';
 
 type HomeScreenRouteProp = RouteProp<RootStackParamList, 'Home'>;
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
@@ -48,6 +49,7 @@ const HomeScreen: React.FC<Props> = ({ route, navigation }) => {
                     <Icon name="user" size={24} color="#000" />
                 </TouchableOpacity>
             </View>
+            <BottomTabNavigator />
         </View>
     );
 };

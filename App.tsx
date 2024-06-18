@@ -5,11 +5,11 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import LoginScreen from './src/screens/user/LoginScreen';
 import HomeScreen from './src/screens/user/HomeScreen';
-import AdminScreen from './src/screens/admin/AdminScreen';
 import { RootStackParamList } from './src/navigations/user/StackNavigator';
 import ProfileScreen from './src/screens/user/ProfileScreen';
 import { ElectionProvider } from './src/helper/ElectionContext';
 import AdminTabNavigator from './src/navigations/admin/AdminTabNavigator';
+import AdminScreen from './src/screens/admin/AdminScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -47,11 +47,11 @@ const App = () => {
   return (
     <ElectionProvider>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName={isLoggedIn ? (isAdmin ? 'AdminTab' : 'Home') : 'Login'}>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="AdminTab" component={AdminTabNavigator} />
-          <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Navigator initialRouteName={isLoggedIn ? (isAdmin ? 'Admin' : 'Home') : 'Login'}>
+          <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Admin" component={AdminScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     </ElectionProvider>

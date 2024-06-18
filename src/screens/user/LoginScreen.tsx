@@ -17,7 +17,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     const handleLogin = async () => {
         if (id === '12020' && password === 'admin120') {
             await AsyncStorage.setItem('userId', id);
-            navigation.navigate('AdminTab');
+            navigation.navigate('Admin');
             return;
         }
 

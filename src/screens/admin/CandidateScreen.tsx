@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-const CandidateScreen: React.FC = () => {
+const CandidateScreen = () => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Candidate Screen</Text>

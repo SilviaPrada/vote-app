@@ -12,7 +12,7 @@ export type RootStackParamList = {
     Home: { user: { userId: string; name: string; token: string } };
     //Admin: undefined;
     Profile: { userId: string };
-    AdminTab: undefined;
+    Admin: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -25,7 +25,6 @@ const StackNavigator = () => {
                 <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
                 {/* <Stack.Screen name="Admin" component={AdminScreen} options={{ headerShown: false }} /> */}
                 <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
-                <Stack.Screen name="AdminTab" component={AdminTabNavigator} options={{ headerShown: false }}/>
             </Stack.Navigator>
         </NavigationContainer>
     );

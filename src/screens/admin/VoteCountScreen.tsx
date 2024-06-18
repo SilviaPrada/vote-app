@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-const VoteCountScreen: React.FC = () => {
+const VoteCountScreen = () => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Vote Count Screen</Text>
