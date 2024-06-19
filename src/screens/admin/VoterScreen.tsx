@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Button, FlatList, ActivityIndicator, Alert, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Button, FlatList, ActivityIndicator, Alert, TextInput, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { BigNumber } from '@ethersproject/bignumber';
 
@@ -31,13 +31,15 @@ const VoterScreen = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showUpdateForm, setShowUpdateForm] = useState(false);
+    const [showAddForm, setShowAddForm] = useState(false);
     const [selectedVoter, setSelectedVoter] = useState<Voter | null>(null);
-    const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+    const [formData, setFormData] = useState({ id: '', name: '', email: '', password: '' });
 
     const fetchVoterHistories = async () => {
         setLoading(true);
         setError(null);
         try {
+            setData([]);
             const response = await axios.get<VoterHistory[]>('http://192.168.0.107:3000/all-voter-histories');
             console.log('Voter Histories:', response.data);
             setData(response.data);
@@ -56,6 +58,7 @@ const VoterScreen = () => {
         setLoading(true);
         setError(null);
         try {
+            setData([]);
             const response = await axios.get<{ error: boolean; message: string; voters: Voter[] }>('http://192.168.0.107:3000/voters');
             console.log('Voters:', response.data);
             setData(response.data.voters);
@@ -100,6 +103,50 @@ const VoterScreen = () => {
         }
     };
 
+    const addVoter = async () => {
+        try {
+            setLoading(true);
+            const existingVoters = await axios.get<{ error: boolean; message: string; voters: Voter[] }>('http://192.168.0.107:3000/voters');
+            const existingIds = existingVoters.data.voters.map(voter => voter.id.hex);
+
+            if (existingIds.includes(formData.id)) {
+                Alert.alert('Error', 'Voter ID already exists');
+                setLoading(false);
+                return;
+            }
+
+            await axios.post('http://192.168.0.107:3000/voters', formData);
+            Alert.alert('Success', 'Voter added successfully');
+            setShowAddForm(false);
+            fetchVoters(); // Refresh the data
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                setError(error.message);
+            } else {
+                setError(String(error));
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const deleteVoter = async (id: string) => {
+        try {
+            setLoading(true);
+            await axios.delete(`http://192.168.0.107:3000/voters/${id}`);
+            Alert.alert('Success', 'Voter deleted successfully');
+            fetchVoters(); // Refresh the data
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                setError(error.message);
+            } else {
+                setError(String(error));
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const renderItem = ({ item }: { item: Voter | VoterHistory }) => {
         if (Array.isArray(item)) {
             // Handling VoterHistory
@@ -122,11 +169,14 @@ const VoterScreen = () => {
                     <Text>Email: {item.email}</Text>
                     <Text>Has Voted: {item.hasVoted.toString()}</Text>
                     <Text>Last Updated: {item.lastUpdated ? formatDateTime(item.lastUpdated.hex) : 'Invalid date'}</Text>
-                    <Button title="Update" onPress={() => {
-                        setSelectedVoter(item);
-                        setFormData({ name: item.name, email: item.email, password: '' });
-                        setShowUpdateForm(true);
-                    }} />
+                    <View style={styles.buttonContainer}>
+                        <Button title="Update" onPress={() => {
+                            setSelectedVoter(item);
+                            setFormData({ id: item.id.hex, name: item.name, email: item.email, password: '' });
+                            setShowUpdateForm(true);
+                        }} />
+                        <Button title="Delete" onPress={() => deleteVoter(item.id.hex)} color="red" />
+                    </View>
                 </View>
             );
         }
@@ -152,6 +202,12 @@ const VoterScreen = () => {
                     <Text style={styles.formTitle}>Update Voter</Text>
                     <TextInput
                         style={styles.input}
+                        placeholder="ID"
+                        value={formData.id}
+                        editable={false}
+                    />
+                    <TextInput
+                        style={styles.input}
                         placeholder="Name"
                         value={formData.name}
                         onChangeText={(text) => setFormData({ ...formData, name: text })}
@@ -173,6 +229,41 @@ const VoterScreen = () => {
                     <Button title="Cancel" onPress={() => setShowUpdateForm(false)} />
                 </View>
             )}
+            {showAddForm && (
+                <View style={styles.form}>
+                    <Text style={styles.formTitle}>Add Voter</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="ID"
+                        value={formData.id}
+                        onChangeText={(text) => setFormData({ ...formData, id: text })}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Name"
+                        value={formData.name}
+                        onChangeText={(text) => setFormData({ ...formData, name: text })}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Email"
+                        value={formData.email}
+                        onChangeText={(text) => setFormData({ ...formData, email: text })}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Password"
+                        secureTextEntry
+                        value={formData.password}
+                        onChangeText={(text) => setFormData({ ...formData, password: text })}
+                    />
+                    <Button title="Submit" onPress={addVoter} />
+                    <Button title="Cancel" onPress={() => setShowAddForm(false)} />
+                </View>
+            )}
+            <TouchableOpacity style={styles.floatingButton} onPress={() => setShowAddForm(true)}>
+                <Text style={styles.floatingButtonText}>+</Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -216,6 +307,27 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         paddingHorizontal: 8,
         width: '100%',
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 8,
+    },
+    floatingButton: {
+        position: 'absolute',
+        right: 20,
+        bottom: 20,
+        backgroundColor: '#007BFF',
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    floatingButtonText: {
+        color: 'white',
+        fontSize: 24,
+        fontWeight: 'bold',
     },
 });
 
