@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, Image, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -13,6 +13,15 @@ type Props = {
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
     const [id, setId] = useState('');
     const [password, setPassword] = useState('');
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            setId('');
+            setPassword('');
+        });
+
+        return unsubscribe;
+    }, [navigation]);
 
     const handleLogin = async () => {
         if (id === '12020' && password === 'admin120') {
