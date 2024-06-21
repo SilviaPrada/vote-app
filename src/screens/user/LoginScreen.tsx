@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert, Image, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigations/user/StackNavigator';
@@ -50,7 +50,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Login</Text>
+            <Image source={require('../../../assets/logo.png')} style={styles.logo} />
+            <Text style={styles.title}>Login untuk mengakses </Text>
             <TextInput
                 style={styles.input}
                 placeholder="Voter ID"
@@ -64,7 +65,10 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                 onChangeText={setPassword}
                 secureTextEntry
             />
-            <Button title="Login" onPress={handleLogin} />
+            {/* <Button title="Login" onPress={handleLogin} /> */}
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -73,20 +77,38 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
-        padding: 16,
+        padding: 35,
         backgroundColor: '#fff',
+    }, logo: {
+        width: 100,
+        height: 100,
+        alignSelf: 'center',
+        marginBottom: 25,
     },
     title: {
+        color: "#EC8638",
         fontSize: 24,
-        marginBottom: 16,
+        marginBottom: 30,
         textAlign: 'center',
+        fontWeight: 'bold',
     },
     input: {
         height: 40,
-        borderColor: '#ccc',
+        borderColor: '#EC8638',
         borderWidth: 1,
         marginBottom: 12,
         paddingHorizontal: 8,
+        borderRadius: 10,
+    }, 
+    button: {
+        backgroundColor: '#EC8638',
+        paddingVertical: 12,
+        borderRadius: 20,
+        alignItems: 'center',
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 16,
     },
 });
 
