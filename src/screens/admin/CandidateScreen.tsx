@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button, FlatList, ActivityIndicator, Alert, TextInput, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { BigNumber } from '@ethersproject/bignumber';
@@ -14,33 +14,47 @@ type Candidate = {
     visi: string;
     misi: string;
     lastUpdated: BigNumberType;
+    hasVoted: boolean;
 };
 
 type CandidateHistory = [
     BigNumberType, // id
     string,       // name
-    string,       // email
-    string,
-    BigNumberType // lastUpdated
+    string,       // visi
+    string,       // misi
+    BigNumberType, // lastUpdated
+    boolean       // hasVoted
 ];
 
 const CandidateScreen = () => {
-    const [data, setData] = useState<Array<Candidate | CandidateHistory>>([]);
+    const [candidateData, setCandidateData] = useState<Candidate[]>([]);
+    const [candidateHistoryData, setCandidateHistoryData] = useState<CandidateHistory[]>([]);
+    const [filteredData, setFilteredData] = useState<Array<Candidate | CandidateHistory>>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showUpdateForm, setShowUpdateForm] = useState(false);
     const [showAddForm, setShowAddForm] = useState(false);
     const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
-    const [formData, setFormData] = useState({ id: '', name: '', visi: '', misi: '' });
+    const [formData, setFormData] = useState({ id: '', name: '', visi: '', misi: '', hasVoted: false });
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentView, setCurrentView] = useState<'validCandidate' | 'candidateHistory'>('validCandidate');
+
+    useEffect(() => {
+        fetchCandidates();
+        fetchCandidateHistories();
+    }, []);
+
+    useEffect(() => {
+        handleSearch(searchQuery);
+    }, [candidateData, candidateHistoryData, currentView]);
 
     const fetchCandidateHistories = async () => {
         setLoading(true);
         setError(null);
         try {
-            setData([]);
             const response = await axios.get<CandidateHistory[]>('http://192.168.0.107:3000/all-candidate-histories');
             console.log('Candidate Histories:', response.data);
-            setData(response.data);
+            setCandidateHistoryData(response.data);
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 setError(error.message);
@@ -56,10 +70,9 @@ const CandidateScreen = () => {
         setLoading(true);
         setError(null);
         try {
-            setData([]);
             const response = await axios.get<{ error: boolean; message: string; candidates: Candidate[] }>('http://192.168.0.107:3000/candidates');
             console.log('Candidates:', response.data);
-            setData(response.data.candidates);
+            setCandidateData(response.data.candidates);
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 setError(error.message);
@@ -148,10 +161,10 @@ const CandidateScreen = () => {
     const renderItem = ({ item }: { item: Candidate | CandidateHistory }) => {
         if (Array.isArray(item)) {
             // Handling CandidateHistory
-            const [id, name, visi, misi, lastUpdated] = item;
+            const [id, name, visi, misi, lastUpdated, hasVoted] = item;
             return (
                 <View style={styles.item}>
-                    <Text>ID: {id?.hex ?? 'N/A'}</Text>
+                    <Text>ID: {id ? BigNumber.from(id.hex).toString() : 'N/A'}</Text>
                     <Text>Name: {name}</Text>
                     <Text>Visi: {visi}</Text>
                     <Text>Misi: {misi}</Text>
@@ -162,7 +175,7 @@ const CandidateScreen = () => {
             // Handling Candidate
             return (
                 <View style={styles.item}>
-                    <Text>ID: {item.id?.hex ?? 'N/A'}</Text>
+                    <Text>ID: {item.id ? BigNumber.from(item.id.hex).toString() : 'N/A'}</Text>
                     <Text>Name: {item.name}</Text>
                     <Text>Visi: {item.visi}</Text>
                     <Text>Misi: {item.misi}</Text>
@@ -170,7 +183,7 @@ const CandidateScreen = () => {
                     <View style={styles.buttonContainer}>
                         <Button title="Update" onPress={() => {
                             setSelectedCandidate(item);
-                            setFormData({ id: item.id.hex, name: item.name, visi: item.visi, misi: item.misi });
+                            setFormData({ id: item.id.hex, name: item.name, visi: item.visi, misi: item.misi, hasVoted: item.hasVoted });
                             setShowUpdateForm(true);
                         }} />
                         <Button title="Delete" onPress={() => deleteCandidate(item.id.hex)} color="red" />
@@ -180,24 +193,87 @@ const CandidateScreen = () => {
         }
     };
 
+    const handleSearch = (text: string) => {
+        setSearchQuery(text);
+        let filteredData;
+        if (text === '') {
+            filteredData = currentView === 'validCandidate' ? candidateData : candidateHistoryData;
+        } else {
+            filteredData = (currentView === 'validCandidate' ? candidateData : candidateHistoryData).filter(item => {
+                if (Array.isArray(item)) {
+                    const [id, name, visi, misi, hasVoted] = item;
+                    return (
+                        name.toLowerCase().includes(text.toLowerCase()) ||
+                        BigNumber.from(id.hex).toString().includes(text) ||
+                        visi.toLowerCase().includes(text.toLowerCase()) ||
+                        misi.toLowerCase().includes(text.toLowerCase()) ||
+                        hasVoted.toString().toLowerCase().includes(text.toLowerCase())
+                    );
+                } else {
+                    return (
+                        item.name.toLowerCase().includes(text.toLowerCase()) ||
+                        BigNumber.from(item.id.hex).toString().includes(text) ||
+                        item.visi.toLowerCase().includes(text.toLowerCase()) ||
+                        item.misi.toLowerCase().includes(text.toLowerCase()) ||
+                        item.hasVoted.toString().toLowerCase().includes(text.toLowerCase())
+                    );
+                }
+            });
+        }
+        setFilteredData(filteredData);
+    };
+
+    const handleViewChange = (view: 'validCandidate' | 'candidateHistory') => {
+        setCurrentView(view);
+        setFilteredData(view === 'validCandidate' ? candidateData : candidateHistoryData);
+        setSearchQuery(''); // Reset search query when switching views
+    };
+
+    const renderHeader = () => (
+        <View style={styles.header}>
+            <TouchableOpacity onPress={() => handleViewChange('validCandidate')} style={currentView === 'validCandidate' ? styles.activeTab : styles.inactiveTab}>
+                <Text style={styles.tabText}>Valid Candidates</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleViewChange('candidateHistory')} style={currentView === 'candidateHistory' ? styles.activeTab : styles.inactiveTab}>
+                <Text style={styles.tabText}>Candidate History</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    const keyExtractor = (item: Candidate | CandidateHistory) => {
+        if (Array.isArray(item)) {
+            // Use ID combined with another attribute for uniqueness
+            const [id, , name] = item;
+            return `${id.hex}-${name}`;
+        } else {
+            // Use ID combined with another attribute for uniqueness
+            return `${item.id.hex}-${item.name}`;
+        }
+    };
+
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Candidate Screen</Text>
-            <Button title="Candidate History" onPress={fetchCandidateHistories} />
-            <Button title="Valid Candidate" onPress={fetchCandidates} />
-            {loading && <ActivityIndicator size="large" color="#0000ff" />}
-            {error && <Text style={styles.error}>{error}</Text>}
-            <FlatList
-                data={data}
-                keyExtractor={(item, index) => {
-                    if (Array.isArray(item)) return item[0]?.hex ?? index.toString();
-                    return item.id?.hex ?? index.toString();
-                }}
-                renderItem={renderItem}
+            <TextInput
+                style={styles.searchBar}
+                placeholder="Search by name, vison, mision or ID"
+                value={searchQuery}
+                onChangeText={handleSearch}
             />
-            {showUpdateForm && selectedCandidate && (
+            {renderHeader()}
+            {loading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+            ) : error ? (
+                <Text style={styles.errorText}>Error: {error}</Text>
+            ) : (
+                <FlatList
+                    data={filteredData}
+                    renderItem={renderItem}
+                    keyExtractor={keyExtractor}
+                />
+            )}
+            {showUpdateForm && (
                 <View style={styles.form}>
-                    <Text style={styles.formTitle}>Update Candidate</Text>
+                    <Text>Update Candidate</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="ID"
@@ -218,7 +294,7 @@ const CandidateScreen = () => {
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="Mision"
+                        placeholder="Mission"
                         value={formData.misi}
                         onChangeText={(text) => setFormData({ ...formData, misi: text })}
                     />
@@ -228,7 +304,7 @@ const CandidateScreen = () => {
             )}
             {showAddForm && (
                 <View style={styles.form}>
-                    <Text style={styles.formTitle}>Add Candidate</Text>
+                    <Text>Add Candidate</Text>
                     <TextInput
                         style={styles.input}
                         placeholder="ID"
@@ -250,7 +326,6 @@ const CandidateScreen = () => {
                     <TextInput
                         style={styles.input}
                         placeholder="Mission"
-                        secureTextEntry
                         value={formData.misi}
                         onChangeText={(text) => setFormData({ ...formData, misi: text })}
                     />
@@ -258,9 +333,7 @@ const CandidateScreen = () => {
                     <Button title="Cancel" onPress={() => setShowAddForm(false)} />
                 </View>
             )}
-            <TouchableOpacity style={styles.floatingButton} onPress={() => setShowAddForm(true)}>
-                <Text style={styles.floatingButtonText}>+</Text>
-            </TouchableOpacity>
+            <Button title="Add New Candidate" onPress={() => setShowAddForm(true)} />
         </View>
     );
 };
@@ -268,62 +341,70 @@ const CandidateScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         padding: 16,
         backgroundColor: '#fff',
     },
-    title: {
-        fontSize: 24,
-        marginBottom: 16,
-    },
-    error: {
-        color: 'red',
-        marginVertical: 8,
-    },
     item: {
+        backgroundColor: '#f9f9f9',
         padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
+        marginVertical: 8,
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 1,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 16,
+    },
+    searchBar: {
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        marginBottom: 16,
+        paddingHorizontal: 8,
+        borderRadius: 8,
     },
     form: {
+        backgroundColor: '#fff',
         padding: 16,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        marginTop: 16,
-        width: '100%',
-    },
-    formTitle: {
-        fontSize: 20,
-        marginBottom: 12,
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 1,
+        marginBottom: 16,
     },
     input: {
         height: 40,
         borderColor: 'gray',
         borderWidth: 1,
-        marginBottom: 12,
+        marginBottom: 16,
         paddingHorizontal: 8,
-        width: '100%',
+        borderRadius: 8,
     },
-    buttonContainer: {
+    errorText: {
+        color: 'red',
+        textAlign: 'center',
+        marginVertical: 16,
+    },
+    header: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 8,
+        justifyContent: 'space-around',
+        marginBottom: 16,
     },
-    floatingButton: {
-        position: 'absolute',
-        right: 20,
-        bottom: 20,
-        backgroundColor: '#007BFF',
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        justifyContent: 'center',
-        alignItems: 'center',
+    activeTab: {
+        borderBottomWidth: 2,
+        borderBottomColor: '#000',
     },
-    floatingButtonText: {
-        color: 'white',
-        fontSize: 24,
+    inactiveTab: {
+        borderBottomWidth: 1,
+        borderBottomColor: 'gray',
+    },
+    tabText: {
+        fontSize: 16,
         fontWeight: 'bold',
     },
 });

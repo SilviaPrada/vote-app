@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Button, FlatList, ActivityIndicator, TextInput } from 'react-native';
 import axios from 'axios';
 import { BigNumber } from '@ethersproject/bignumber';
 
@@ -27,8 +27,10 @@ interface VoteHistory {
 const VoteCountScreen: React.FC = () => {
     const [voteCounts, setVoteCounts] = useState<VoteCount[]>([]);
     const [voteHistories, setVoteHistories] = useState<VoteHistory[]>([]);
+    const [filteredHistories, setFilteredHistories] = useState<VoteHistory[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [searchText, setSearchText] = useState('');
 
     const fetchVoteCounts = async () => {
         setLoading(true);
@@ -56,12 +58,13 @@ const VoteCountScreen: React.FC = () => {
             setVoteHistories([]);
             const response = await axios.get<VoteHistoryItem[][]>('http://192.168.0.107:3000/all-vote-count-histories');
             console.log('Vote Histories:', response.data);
-            // Adapt the response structure if necessary
-            setVoteHistories(response.data.map(item => ({
+            const formattedHistories = response.data.map(item => ({
                 candidate: item[0],
                 count: item[1],
                 timestamp: item[2],
-            })));
+            }));
+            setVoteHistories(formattedHistories);
+            setFilteredHistories(formattedHistories);
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 setError(error.message);
@@ -91,18 +94,30 @@ const VoteCountScreen: React.FC = () => {
 
     const renderVoteCountItem = ({ item }: { item: VoteCount }) => (
         <View style={styles.voteCount}>
-            <Text style={styles.candidate}>{item.id?.hex ?? 'N/A'}</Text>
-            <Text style={styles.count}>{item.voteCount?.hex ?? 'N/A'} votes</Text>
+            <Text style={styles.candidate}>{item.id ? BigNumber.from(item.id.hex).toString() : 'N/A'}</Text>
+            <Text style={styles.count}>{item.voteCount ? BigNumber.from(item.voteCount.hex).toString() : 'N/A'} votes</Text>
         </View>
     );
 
     const renderVoteHistoryItem = ({ item }: { item: VoteHistory }) => (
         <View style={styles.historyItem}>
-            <Text style={styles.historyText}>Candidate: {item.candidate?.hex ?? 'N/A'}</Text>
-            <Text style={styles.historyText}>Count: {item.count?.hex ?? 'N/A'}</Text>
+            <Text style={styles.historyText}>Candidate: {item.candidate ? BigNumber.from(item.candidate.hex).toString() : 'N/A'}</Text>
+            <Text style={styles.historyText}>Count: {item.count ? BigNumber.from(item.count.hex).toString() : 'N/A'}</Text>
             <Text style={styles.historyText}>Timestamp: {item.timestamp ? formatDateTime(item.timestamp.hex) : 'Invalid date'}</Text>
         </View>
     );
+
+    const handleSearch = (text: string) => {
+        setSearchText(text);
+        if (text) {
+            const filtered = voteHistories.filter(history =>
+                BigNumber.from(history.candidate.hex).toString().includes(text)
+            );
+            setFilteredHistories(filtered);
+        } else {
+            setFilteredHistories(voteHistories);
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -118,11 +133,16 @@ const VoteCountScreen: React.FC = () => {
                 renderItem={renderVoteCountItem}
             />
 
-
             <Button title="Refresh Vote Histories" onPress={fetchVoteHistories} />
             <Text style={styles.subtitle}>Vote Count History:</Text>
+            <TextInput
+                style={styles.searchBar}
+                placeholder="Search by candidate ID"
+                value={searchText}
+                onChangeText={handleSearch}
+            />
             <FlatList
-                data={voteHistories}
+                data={filteredHistories}
                 keyExtractor={(item, index) => item.candidate?.hex ?? index.toString()}
                 renderItem={renderVoteHistoryItem}
             />
@@ -136,11 +156,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 16,
-        backgroundColor: '#fff',
+        backgroundColor: '#f8f9fa',
     },
     title: {
         fontSize: 24,
         marginBottom: 16,
+        fontWeight: 'bold',
+        color: '#343a40',
     },
     error: {
         color: 'red',
@@ -148,7 +170,9 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 20,
-        marginBottom: 8,
+        marginVertical: 8,
+        fontWeight: '600',
+        color: '#495057',
     },
     voteCount: {
         flexDirection: 'row',
@@ -156,21 +180,34 @@ const styles = StyleSheet.create({
         width: '100%',
         paddingVertical: 8,
         borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
+        borderBottomColor: '#ced4da',
     },
     candidate: {
         fontSize: 18,
+        color: '#212529',
     },
     count: {
         fontSize: 18,
+        color: '#212529',
     },
     historyItem: {
         paddingVertical: 8,
         borderBottomWidth: 1,
-        borderBottomColor: '#eee',
+        borderBottomColor: '#dee2e6',
     },
     historyText: {
         fontSize: 16,
+        color: '#495057',
+    },
+    searchBar: {
+        height: 40,
+        width: '100%',
+        borderColor: '#ced4da',
+        borderWidth: 1,
+        borderRadius: 8,
+        marginBottom: 12,
+        paddingHorizontal: 8,
+        backgroundColor: '#fff',
     },
 });
 
