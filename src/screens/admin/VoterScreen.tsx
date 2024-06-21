@@ -131,7 +131,9 @@ const VoterScreen = () => {
             await axios.post('http://192.168.0.107:3000/voters', formData);
             Alert.alert('Success', 'Voter added successfully');
             setShowAddForm(false);
-            fetchVoters(); // Refresh the data
+            fetchVoters(); // Refresh the voter data
+            fetchVoterHistories(); // Refresh the voter history data
+            setFilteredData(currentView === 'validVoter' ? voterData : voterHistoryData);
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 setError(error.message);

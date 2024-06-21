@@ -1,27 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { useElection } from '../../helper/ElectionContext';
+import { PieChart } from 'react-native-chart-kit';
 
 const HomeTabScreen = () => {
-    // const [candidates, useElection()] = useState<any[]>([]);
     const { candidates } = useElection();
 
-    // useEffect(() => {
-    //     const fetchCandidates = async () => {
-    //         try {
-    //             const response = await fetch('http://192.168.0.107:3000/candidates');
-    //             const data = await response.json();
-    //             setCandidates(data.candidates);
-    //         } catch (error) {
-    //             console.error('Error fetching candidates:', error);
-    //         }
-    //     };
-
-    //     fetchCandidates();
-    // }, []);
-
     const renderCandidateItem = ({ item }: { item: any }) => {
-        // Assuming item structure is consistent with the provided example
         const id = parseInt(item.id.hex, 16);
         const name = item.name;
         const visi = item.visi;
@@ -30,14 +15,27 @@ const HomeTabScreen = () => {
 
         return (
             <View style={styles.candidateItem}>
-                <Text>ID: {id}</Text>
-                <Text>Name: {name}</Text>
-                <Text>Visi: {visi}</Text>
-                <Text>Misi: {misi}</Text>
-                <Text>Vote Count: {voteCount}</Text>
+                <View style={styles.candidateIdCircle}>
+                    <Text style={styles.candidateId}>{id}</Text>
+                </View>
+                <Text style={styles.candidateName}>{name}</Text>
+                <View style={styles.candidateDetails}>
+                    <Text style={styles.candidateVisi}>{visi}</Text>
+                    <Text style={styles.candidateMisi}>{misi}</Text>
+                </View>
+                <Text style={styles.voteCount}>Votes: {voteCount}</Text>
             </View>
         );
     };
+
+    const totalVotes = candidates.reduce((sum, candidate) => sum + parseInt(candidate.voteCount.hex, 16), 0);
+    const chartData = candidates.map(candidate => ({
+        name: candidate.name,
+        population: (parseInt(candidate.voteCount.hex, 16) / totalVotes) * 100,
+        color: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color for each candidate
+        legendFontColor: "#7F7F7F",
+        legendFontSize: 15
+    }));
 
     return (
         <View style={styles.container}>
@@ -47,6 +45,27 @@ const HomeTabScreen = () => {
                 renderItem={renderCandidateItem}
                 keyExtractor={(item, index) => `${item.id.hex}-${index}`}
                 contentContainerStyle={styles.listContainer}
+                ListFooterComponent={
+                    <PieChart
+                        data={chartData}
+                        width={400} // from react-native
+                        height={220}
+                        chartConfig={{
+                            backgroundColor: '#e26a00',
+                            backgroundGradientFrom: '#fb8c00',
+                            backgroundGradientTo: '#ffa726',
+                            decimalPlaces: 2,
+                            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                            style: {
+                                borderRadius: 16
+                            }
+                        }}
+                        accessor="population"
+                        backgroundColor="transparent"
+                        paddingLeft="15"
+                        absolute
+                    />
+                }
             />
         </View>
     );
@@ -62,6 +81,9 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         marginBottom: 16,
+        marginTop: 20,
+        color: '#EC8638',
+        fontWeight: 'bold',
     },
     listContainer: {
         flexGrow: 1,
@@ -69,10 +91,61 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
     },
     candidateItem: {
-        backgroundColor: '#f0f0f0',
-        padding: 12,
+        backgroundColor: 'rgba(242, 203, 168, 0.7)', // Slightly transparent background
+        padding: 16,
         marginVertical: 8,
         borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
+        position: 'relative', // Ensure the absolute positioning of the circle works within this container
+    },
+    candidateIdCircle: {
+        position: 'absolute',
+        top: -10,
+        left: -10,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#EC8638',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
+    },
+    candidateId: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    candidateName: {
+        fontSize: 20,
+        fontWeight: '600',
+        marginBottom: 8,
+        color: '#555',
+    },
+    candidateDetails: {
+        marginBottom: 8,
+    },
+    candidateVisi: {
+        fontSize: 16,
+        fontStyle: 'italic',
+        color: '#777',
+    },
+    candidateMisi: {
+        fontSize: 16,
+        fontStyle: 'italic',
+        color: '#777',
+    },
+    voteCount: {
+        fontSize: 14,
+        color: '#999',
+        marginTop: 4,
     },
 });
 

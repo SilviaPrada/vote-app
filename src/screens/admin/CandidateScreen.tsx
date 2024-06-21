@@ -130,6 +130,9 @@ const CandidateScreen = () => {
             Alert.alert('Success', 'Candidate added successfully');
             setShowAddForm(false);
             fetchCandidates(); // Refresh the data
+            fetchCandidateHistories(); // Refresh the voter history data
+            setFilteredData(currentView === 'validCandidate' ? candidateData : candidateHistoryData);
+            setFormData({ id: '', name: '', visi: '', misi: '', hasVoted: false }); // Reset form data
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 setError(error.message);
@@ -287,16 +290,20 @@ const CandidateScreen = () => {
                         onChangeText={(text) => setFormData({ ...formData, name: text })}
                     />
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, styles.textArea]}
                         placeholder="Vision"
                         value={formData.visi}
                         onChangeText={(text) => setFormData({ ...formData, visi: text })}
+                        multiline
+                        numberOfLines={4}
                     />
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, styles.textArea]}
                         placeholder="Mission"
                         value={formData.misi}
                         onChangeText={(text) => setFormData({ ...formData, misi: text })}
+                        multiline
+                        numberOfLines={4}
                     />
                     <Button title="Submit" onPress={updateCandidate} />
                     <Button title="Cancel" onPress={() => setShowUpdateForm(false)} />
@@ -318,22 +325,32 @@ const CandidateScreen = () => {
                         onChangeText={(text) => setFormData({ ...formData, name: text })}
                     />
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, styles.textArea]}
                         placeholder="Vision"
                         value={formData.visi}
                         onChangeText={(text) => setFormData({ ...formData, visi: text })}
+                        multiline
+                        numberOfLines={4}
                     />
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, styles.textArea]}
                         placeholder="Mission"
                         value={formData.misi}
                         onChangeText={(text) => setFormData({ ...formData, misi: text })}
+                        multiline
+                        numberOfLines={4}
                     />
                     <Button title="Submit" onPress={addCandidate} />
-                    <Button title="Cancel" onPress={() => setShowAddForm(false)} />
+                    <Button title="Cancel" onPress={() => {
+                        setShowAddForm(false);
+                        setFormData({ id: '', name: '', visi: '', misi: '', hasVoted: false }); // Reset form data on cancel
+                    }} />
                 </View>
             )}
-            <Button title="Add New Candidate" onPress={() => setShowAddForm(true)} />
+            <Button title="Add New Candidate" onPress={() => {
+                setShowAddForm(true);
+                setFormData({ id: '', name: '', visi: '', misi: '', hasVoted: false }); // Reset form data before showing add form
+            }} />
         </View>
     );
 };
@@ -384,6 +401,10 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         paddingHorizontal: 8,
         borderRadius: 8,
+    },
+    textArea: {
+        height: 80,
+        textAlignVertical: 'top', // This is important to ensure the text starts at the top of the TextInput
     },
     errorText: {
         color: 'red',
