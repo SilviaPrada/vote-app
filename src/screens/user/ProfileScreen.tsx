@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
+import { Image, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigations/user/StackNavigator';
@@ -49,12 +49,27 @@ const ProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
     return (
         <View style={styles.container}>
+            <Image source={require('../../../assets/logo.png')} style={styles.logo} />
             <Text style={styles.title}>Profile</Text>
-            <Text>ID: {parseInt(voterData.id.hex, 16)}</Text>
-            <Text>Name: {voterData.name}</Text>
-            <Text>Email: {voterData.email}</Text>
-            <Text>Has Voted: {voterData.hasVoted ? 'Yes' : 'No'}</Text>
-            <Button title="Logout" onPress={handleLogout} />
+            <View style={styles.dataContainer}>
+                <Text style={styles.dataTitle}>ID</Text>
+                <Text style={styles.dataText}>{parseInt(voterData.id.hex, 16)}</Text>
+            </View>
+            <View style={styles.dataContainer}>
+                <Text style={styles.dataTitle}>Name</Text>
+                <Text style={styles.dataText}>{voterData.name}</Text>
+            </View>
+            <View style={styles.dataContainer}>
+                <Text style={styles.dataTitle}>Email</Text>
+                <Text style={styles.dataText}>{voterData.email}</Text>
+            </View>
+            <View style={styles.dataContainer}>
+                <Text style={styles.dataTitle}>Has Voted</Text>
+                <Text style={styles.dataText}>{voterData.hasVoted ? 'Yes' : 'No'}</Text>
+            </View>
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                <Text style={styles.buttonText}>Logout</Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -67,9 +82,46 @@ const styles = StyleSheet.create({
         padding: 16,
         backgroundColor: '#fff',
     },
+    logo: {
+        width: 100,
+        height: 100,
+        alignSelf: 'center',
+        marginBottom: 25,
+    },
     title: {
         fontSize: 24,
-        marginBottom: 16,
+        marginBottom: 70,
+        color: '#EC8638',
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    dataContainer: {
+        width: '100%',
+        marginBottom: 12,
+        paddingHorizontal: 16,
+    },
+    dataTitle: {
+        fontSize: 18,
+        color: '#EC8638',
+        fontWeight: 'bold',
+    },
+    dataText: {
+        fontSize: 16,
+        color: '#333',
+        marginBottom: 4,
+    },
+    logoutButton: {
+        backgroundColor: '#EC8638',
+        padding: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginTop: 80,
+        width: '70%',
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 });
 

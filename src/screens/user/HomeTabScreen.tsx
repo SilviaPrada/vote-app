@@ -20,7 +20,9 @@ const HomeTabScreen = () => {
                 </View>
                 <Text style={styles.candidateName}>{name}</Text>
                 <View style={styles.candidateDetails}>
+                    <Text style={styles.candidateDetailTitle}>Vision</Text>
                     <Text style={styles.candidateVisi}>{visi}</Text>
+                    <Text style={styles.candidateDetailTitle}>Mision</Text>
                     <Text style={styles.candidateMisi}>{misi}</Text>
                 </View>
                 <Text style={styles.voteCount}>Votes: {voteCount}</Text>
@@ -30,7 +32,7 @@ const HomeTabScreen = () => {
 
     const totalVotes = candidates.reduce((sum, candidate) => sum + parseInt(candidate.voteCount.hex, 16), 0);
     const chartData = candidates.map(candidate => ({
-        name: candidate.name,
+        name: '% ' + candidate.name,
         population: (parseInt(candidate.voteCount.hex, 16) / totalVotes) * 100,
         color: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color for each candidate
         legendFontColor: "#7F7F7F",
@@ -46,7 +48,7 @@ const HomeTabScreen = () => {
                 keyExtractor={(item, index) => `${item.id.hex}-${index}`}
                 contentContainerStyle={styles.listContainer}
                 ListFooterComponent={
-                    <PieChart
+                    <><Text style={styles.title}>Vote Counting Results</Text><PieChart
                         data={chartData}
                         width={400} // from react-native
                         height={220}
@@ -62,9 +64,8 @@ const HomeTabScreen = () => {
                         }}
                         accessor="population"
                         backgroundColor="transparent"
-                        paddingLeft="15"
-                        absolute
-                    />
+                        paddingLeft="0"
+                        absolute /></>
                 }
             />
         </View>
@@ -84,6 +85,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
         color: '#EC8638',
         fontWeight: 'bold',
+        textAlign: 'center',
     },
     listContainer: {
         flexGrow: 1,
@@ -95,11 +97,7 @@ const styles = StyleSheet.create({
         padding: 16,
         marginVertical: 8,
         borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
+        marginTop: 13,
         position: 'relative', // Ensure the absolute positioning of the circle works within this container
     },
     candidateIdCircle: {
@@ -127,24 +125,31 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: '600',
         marginBottom: 8,
-        color: '#555',
+        color: '#000',
+        textAlign: 'center',
     },
     candidateDetails: {
         marginBottom: 8,
     },
+    candidateDetailTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#EC8638',
+    },
     candidateVisi: {
         fontSize: 16,
         fontStyle: 'italic',
-        color: '#777',
+        color: '#000',
+        textAlign: 'center',
     },
     candidateMisi: {
         fontSize: 16,
         fontStyle: 'italic',
-        color: '#777',
+        color: '#000',
     },
     voteCount: {
         fontSize: 14,
-        color: '#999',
+        color: '#777',
         marginTop: 4,
     },
 });

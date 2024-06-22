@@ -12,15 +12,6 @@ const VoteTabScreen = () => {
     const [modalVisible, setModalVisible] = useState<boolean>(false);
 
     useEffect(() => {
-        // const fetchCandidates = async () => {
-        //     try {
-        //         const response = await fetch('http://192.168.0.107:3000/candidates');
-        //         const data = await response.json();
-        //         setCandidates(data.candidates);
-        //     } catch (error) {
-        //         console.error('Error fetching candidates:', error);
-        //     }
-        // };
 
         const checkVoteStatus = async () => {
             try {
@@ -37,7 +28,6 @@ const VoteTabScreen = () => {
             }
         };
 
-        //fetchCandidates();
         checkVoteStatus();
     }, []);
 
@@ -89,8 +79,10 @@ const VoteTabScreen = () => {
                 }}
                 disabled={hasVoted}
             >
-                <Text>ID: {id}</Text>
-                <Text>Name: {name}</Text>
+                <View style={styles.candidateIdCircle}>
+                    <Text style={styles.candidateId}>{id}</Text>
+                </View>
+                <Text style={styles.candidateName}>{name}</Text>
             </TouchableOpacity>
         );
     };
@@ -103,6 +95,7 @@ const VoteTabScreen = () => {
                 renderItem={renderCandidateItem}
                 keyExtractor={(item) => item.id.hex}
                 contentContainerStyle={styles.listContainer}
+                numColumns={2}
             />
             <Modal
                 visible={modalVisible}
@@ -112,7 +105,7 @@ const VoteTabScreen = () => {
             >
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
-                        <Text>Enter Password to Vote</Text>
+                        <Text style={styles.modalTitle}>Enter Password to Vote</Text>
                         <TextInput
                             style={styles.input}
                             secureTextEntry
@@ -120,8 +113,14 @@ const VoteTabScreen = () => {
                             onChangeText={setPassword}
                             placeholder="Password"
                         />
-                        <Button title="Submit Vote" onPress={handleVote} />
-                        <Button title="Cancel" onPress={() => setModalVisible(false)} />
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity style={[styles.button, styles.submitButton]} onPress={handleVote}>
+                                <Text style={styles.buttonText}>Submit Vote</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setModalVisible(false)}>
+                                <Text style={styles.buttonText}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             </Modal>
@@ -140,6 +139,10 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         marginBottom: 16,
+        marginTop: 20,
+        color: '#EC8638',
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
     listContainer: {
         flexGrow: 1,
@@ -147,13 +150,46 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
     },
     candidateItem: {
-        backgroundColor: '#f0f0f0',
-        padding: 12,
+        backgroundColor: '#d9d9d9', // Slightly transparent background
+        padding: 20,
+        width: '46%',
+        marginLeft: 8,
+        marginRight: 8,
         marginVertical: 8,
         borderRadius: 8,
+        marginTop: 13,
+        position: 'relative', // Ensure the absolute positioning of the circle works within this container
+    },
+    candidateIdCircle: {
+        position: 'absolute',
+        top: -10,
+        left: -10,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#EC8638',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
+    },
+    candidateId: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    candidateName: {
+        fontSize: 20,
+        fontWeight: '600',
+        marginBottom: 8,
+        color: '#000',
+        textAlign: 'center',
     },
     selectedCandidate: {
-        backgroundColor: '#b0e57c', // Example of selected candidate color
+        backgroundColor: 'rgba(242, 203, 168, 0.7)', // Example of selected candidate color
     },
     input: {
         height: 40,
@@ -161,6 +197,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         marginVertical: 10,
         paddingHorizontal: 8,
+        borderRadius: 8,
         width: '100%',
     },
     modalContainer: {
@@ -177,10 +214,37 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     voteStatus: {
-        marginTop: 20,
-        fontSize: 18,
-        color: 'green',
+        marginBottom: 20,
+        fontSize: 20,
+        color: 'red',
+    }, 
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 16,
     },
+    button: {
+        flex: 1,
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+        marginHorizontal: 5,
+    },
+    submitButton: {
+        backgroundColor: '#EC8638',
+    },
+    cancelButton: {
+        backgroundColor: '#d3d3d3',
+    },
+    buttonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    modalTitle:{
+        color: '#EC8638',
+        fontWeight: 'bold',
+        fontSize: 17,
+    }
 });
 
 export default VoteTabScreen;
