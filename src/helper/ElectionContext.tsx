@@ -37,7 +37,7 @@ export const ElectionProvider: React.FC<ElectionProviderProps> = ({ children }) 
     useEffect(() => {
         const fetchCandidates = async () => {
             try {
-                const response = await fetch('http://192.168.0.107:3000/candidates');
+                const response = await fetch('http://192.168.0.103:3000/candidates');
                 const data = await response.json();
                 setCandidates(data.candidates);
             } catch (error) {
@@ -50,7 +50,7 @@ export const ElectionProvider: React.FC<ElectionProviderProps> = ({ children }) 
 
     const updateCandidates = async () => {
         try {
-            const response = await fetch('http://192.168.0.107:3000/candidates');
+            const response = await fetch('http://192.168.0.103:3000/candidates');
             const data = await response.json();
             setCandidates(data.candidates);
         } catch (error) {

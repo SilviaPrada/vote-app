@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, FlatList, ActivityIndicator, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Button, FlatList, ActivityIndicator, TextInput, TouchableOpacity, Alert } from 'react-native';
 import axios from 'axios';
 import { BigNumber } from '@ethersproject/bignumber';
 
@@ -37,7 +37,7 @@ const VoteCountScreen: React.FC = () => {
         setError(null);
         try {
             setVoteCounts([]);
-            const response = await axios.get<{ voteCounts: VoteCount[] }>('http://192.168.0.107:3000/vote-counts');
+            const response = await axios.get<{ voteCounts: VoteCount[] }>('http://192.168.0.103:3000/vote-counts');
             console.log('Vote Counts:', response.data);
             setVoteCounts(response.data.voteCounts);
         } catch (error) {
@@ -56,7 +56,7 @@ const VoteCountScreen: React.FC = () => {
         setError(null);
         try {
             setVoteHistories([]);
-            const response = await axios.get<VoteHistoryItem[][]>('http://192.168.0.107:3000/all-vote-count-histories');
+            const response = await axios.get<VoteHistoryItem[][]>('http://192.168.0.103:3000/all-vote-count-histories');
             console.log('Vote Histories:', response.data);
             const formattedHistories = response.data.map(item => ({
                 candidate: item[0],
@@ -122,7 +122,9 @@ const VoteCountScreen: React.FC = () => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Vote Count Screen</Text>
-            <Button title="Refresh Vote Counts" onPress={fetchVoteCounts} />
+            <TouchableOpacity style={styles.refreshButton} onPress={fetchVoteCounts}>
+                <Text style={styles.buttonText}>Refresh Vote Counts</Text>
+            </TouchableOpacity>
             {loading && <ActivityIndicator size="large" color="#0000ff" />}
             {error && <Text style={styles.error}>{error}</Text>}
 
@@ -133,7 +135,9 @@ const VoteCountScreen: React.FC = () => {
                 renderItem={renderVoteCountItem}
             />
 
-            <Button title="Refresh Vote Histories" onPress={fetchVoteHistories} />
+            <TouchableOpacity style={styles.refreshButton} onPress={fetchVoteHistories}>
+                <Text style={styles.buttonText}>Refresh Vote Histories</Text>
+            </TouchableOpacity>
             <Text style={styles.subtitle}>Vote Count History:</Text>
             <TextInput
                 style={styles.searchBar}
@@ -156,7 +160,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 16,
-        backgroundColor: '#f8f9fa',
+        backgroundColor: '#fff',
     },
     title: {
         fontSize: 24,
@@ -202,12 +206,23 @@ const styles = StyleSheet.create({
     searchBar: {
         height: 40,
         width: '100%',
-        borderColor: '#ced4da',
+        borderColor: '#EC8638',
         borderWidth: 1,
         borderRadius: 8,
         marginBottom: 12,
         paddingHorizontal: 8,
         backgroundColor: '#fff',
+    },
+    refreshButton: {
+        backgroundColor: '#EC8638',
+        padding: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 15,
     },
 });
 

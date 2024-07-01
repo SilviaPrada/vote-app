@@ -31,7 +31,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         }
 
         try {
-            const response = await fetch('http://192.168.0.107:3000/login', {
+            const response = await fetch('http://192.168.0.103:3000/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -53,6 +53,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
                 Alert.alert('Error', data.message);
             }
         } catch (error: any) {
+            console.error('Login Error:', error);
             Alert.alert('Error', error.message || 'Something went wrong');
         }
     };
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         paddingHorizontal: 8,
         borderRadius: 10,
-    }, 
+    },
     button: {
         backgroundColor: '#EC8638',
         paddingVertical: 12,

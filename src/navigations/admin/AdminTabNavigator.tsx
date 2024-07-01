@@ -9,37 +9,32 @@ const Tab = createBottomTabNavigator();
 
 const AdminTabNavigator = () => {
     return (
-        <Tab.Navigator>
-            <Tab.Screen
-                name="Voter"
-                component={VoterScreen}
-                options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <Icon name="users" color={color} size={size} />
-                    ),
-                    headerShown: false,
-                }}
-            />
-            <Tab.Screen
-                name="Candidate"
-                component={CandidateScreen}
-                options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <Icon name="user" color={color} size={size} />
-                    ),
-                    headerShown: false,
-                }}
-            />
-            <Tab.Screen
-                name="Vote Count"
-                component={VoteCountScreen}
-                options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <Icon name="bar-chart" color={color} size={size} />
-                    ),
-                    headerShown: false,
-                }}
-            />
+        <Tab.Navigator
+            screenOptions={({ route }) => ({
+                tabBarIcon: ({ color, size }) => {
+                    let iconName: string;
+
+                    if (route.name === 'Voter') {
+                        iconName = 'users';
+                    } else if (route.name === 'Candidate') {
+                        iconName = 'user';
+                    } else if (route.name === 'Vote Count') {
+                        iconName = 'bar-chart';
+                    } else {
+                        // Default value to avoid undefined
+                        iconName = 'circle';
+                    }
+
+                    return <Icon name={iconName} color={color} size={size} />;
+                },
+                tabBarActiveTintColor: '#EC8638',
+                tabBarInactiveTintColor: 'gray',
+                headerShown: false,
+            })}
+        >
+            <Tab.Screen name="Voter" component={VoterScreen} />
+            <Tab.Screen name="Candidate" component={CandidateScreen} />
+            <Tab.Screen name="Vote Count" component={VoteCountScreen} />
         </Tab.Navigator>
     );
 };

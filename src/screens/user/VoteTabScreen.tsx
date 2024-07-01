@@ -20,7 +20,7 @@ const VoteTabScreen = () => {
                     throw new Error('User ID not found');
                 }
 
-                const response = await fetch(`http://192.168.0.107:3000/voteStatus/${userId}`);
+                const response = await fetch(`http://192.168.0.103:3000/voteStatus/${userId}`);
                 const data = await response.json();
                 setHasVoted(data.hasVoted);
             } catch (error) {
@@ -38,7 +38,7 @@ const VoteTabScreen = () => {
                 throw new Error('User ID not found');
             }
 
-            const response = await fetch('http://192.168.0.107:3000/vote', {
+            const response = await fetch('http://192.168.0.103:3000/vote', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         fontSize: 20,
         color: 'red',
-    }, 
+    },
     buttonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
     },
-    modalTitle:{
+    modalTitle: {
         color: '#EC8638',
         fontWeight: 'bold',
         fontSize: 17,

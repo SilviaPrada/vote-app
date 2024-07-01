@@ -52,7 +52,7 @@ const VoterScreen = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get<VoterHistory[]>('http://192.168.0.107:3000/all-voter-histories');
+            const response = await axios.get<VoterHistory[]>('http://192.168.0.103:3000/all-voter-histories');
             console.log('Voter Histories:', response.data);
             setVoterHistoryData(response.data);
             if (currentView === 'voterHistory') setFilteredData(response.data);
@@ -71,7 +71,7 @@ const VoterScreen = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get<{ error: boolean; message: string; voters: Voter[] }>('http://192.168.0.107:3000/voters');
+            const response = await axios.get<{ error: boolean; message: string; voters: Voter[] }>('http://192.168.0.103:3000/voters');
             console.log('Voters:', response.data);
             setVoterData(response.data.voters);
             if (currentView === 'validVoter') setFilteredData(response.data.voters);
@@ -101,7 +101,7 @@ const VoterScreen = () => {
         if (!selectedVoter) return;
         try {
             setLoading(true);
-            await axios.put(`http://192.168.0.107:3000/voters/${selectedVoter.id.hex}`, formData);
+            await axios.put(`http://192.168.0.103:3000/voters/${selectedVoter.id.hex}`, formData);
             Alert.alert('Success', 'Voter updated successfully');
             setShowUpdateForm(false);
             fetchVoters(); // Refresh the data
@@ -119,7 +119,7 @@ const VoterScreen = () => {
     const addVoter = async () => {
         try {
             setLoading(true);
-            const existingVoters = await axios.get<{ error: boolean; message: string; voters: Voter[] }>('http://192.168.0.107:3000/voters');
+            const existingVoters = await axios.get<{ error: boolean; message: string; voters: Voter[] }>('http://192.168.0.103:3000/voters');
             const existingIds = existingVoters.data.voters.map(voter => voter.id.hex);
 
             if (existingIds.includes(formData.id)) {
@@ -128,7 +128,7 @@ const VoterScreen = () => {
                 return;
             }
 
-            await axios.post('http://192.168.0.107:3000/voters', formData);
+            await axios.post('http://192.168.0.103:3000/voters', formData);
             Alert.alert('Success', 'Voter added successfully');
             setShowAddForm(false);
             fetchVoters(); // Refresh the voter data
@@ -148,7 +148,7 @@ const VoterScreen = () => {
     const deleteVoter = async (id: string) => {
         try {
             setLoading(true);
-            await axios.delete(`http://192.168.0.107:3000/voters/${id}`);
+            await axios.delete(`http://192.168.0.103:3000/voters/${id}`);
             Alert.alert('Success', 'Voter deleted successfully');
             fetchVoters(); // Refresh the data
         } catch (error) {
@@ -185,12 +185,16 @@ const VoterScreen = () => {
                     <Text>Has Voted: {item.hasVoted.toString()}</Text>
                     <Text>Last Updated: {item.lastUpdated ? formatDateTime(item.lastUpdated.hex) : 'Invalid date'}</Text>
                     <View style={styles.buttonContainer}>
-                        <Button title="Update" onPress={() => {
+                        <TouchableOpacity style={styles.updateButton} onPress={() => {
                             setSelectedVoter(item);
                             setFormData({ id: item.id.hex, name: item.name, email: item.email, password: '' });
                             setShowUpdateForm(true);
-                        }} />
-                        <Button title="Delete" onPress={() => deleteVoter(item.id.hex)} color="red" />
+                        }}>
+                            <Text style={styles.buttonText}>Update</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.deleteButton} onPress={() => deleteVoter(item.id.hex)}>
+                            <Text style={styles.buttonText}>Delete</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             );
@@ -295,8 +299,12 @@ const VoterScreen = () => {
                         secureTextEntry
                         onChangeText={text => setFormData({ ...formData, password: text })}
                     />
-                    <Button title="Submit" onPress={updateVoter} />
-                    <Button title="Cancel" onPress={() => setShowUpdateForm(false)} color="red" />
+                    <TouchableOpacity style={styles.updateButton} onPress={updateVoter}>
+                        <Text style={styles.buttonText}>Submit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.cancelButton} onPress={() => setShowUpdateForm(false)}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
                 </View>
             )}
             {showAddForm && (
@@ -327,11 +335,23 @@ const VoterScreen = () => {
                         secureTextEntry
                         onChangeText={text => setFormData({ ...formData, password: text })}
                     />
-                    <Button title="Submit" onPress={addVoter} />
-                    <Button title="Cancel" onPress={() => setShowAddForm(false)} color="red" />
+                    <TouchableOpacity style={styles.updateButton} onPress={addVoter}>
+                        <Text style={styles.buttonText}>Submit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.cancelButton} onPress={() => {
+                        setShowAddForm(false);
+                        setFormData({ id: '', name: '', email: '', password: '' });
+                    }}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
                 </View>
             )}
-            <Button title="Add New Voter" onPress={() => setShowAddForm(true)} />
+            <TouchableOpacity style={styles.addButton} onPress={() => {
+                setShowAddForm(true);
+                setFormData({ id: '', name: '', email: '', password: '' }); // Reset form data before showing add form
+            }}>
+                <Text style={styles.buttonText}>Add New Voter</Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -359,7 +379,7 @@ const styles = StyleSheet.create({
     },
     searchBar: {
         height: 40,
-        borderColor: 'gray',
+        borderColor: '#EC8638',
         borderWidth: 1,
         marginBottom: 16,
         paddingHorizontal: 8,
@@ -395,15 +415,48 @@ const styles = StyleSheet.create({
     },
     activeTab: {
         borderBottomWidth: 2,
-        borderBottomColor: '#000',
+        borderBottomColor: '#EC8638',
     },
     inactiveTab: {
         borderBottomWidth: 1,
-        borderBottomColor: 'gray',
+        borderBottomColor: 'rgba(242, 203, 168, 0.7)',
     },
     tabText: {
         fontSize: 16,
         fontWeight: 'bold',
+        color: '#EC8638',
+    },
+    updateButton: {
+        backgroundColor: '#EC8638',
+        padding: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    deleteButton: {
+        backgroundColor: 'gray',
+        padding: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    cancelButton: {
+        backgroundColor: 'gray',
+        padding: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    addButton: {
+        backgroundColor: '#EC8638',
+        padding: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginTop: 16,
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 15,
     },
 });
 

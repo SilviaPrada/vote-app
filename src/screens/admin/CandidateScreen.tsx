@@ -14,7 +14,6 @@ type Candidate = {
     visi: string;
     misi: string;
     lastUpdated: BigNumberType;
-    hasVoted: boolean;
 };
 
 type CandidateHistory = [
@@ -23,7 +22,6 @@ type CandidateHistory = [
     string,       // visi
     string,       // misi
     BigNumberType, // lastUpdated
-    boolean       // hasVoted
 ];
 
 const CandidateScreen = () => {
@@ -35,7 +33,7 @@ const CandidateScreen = () => {
     const [showUpdateForm, setShowUpdateForm] = useState(false);
     const [showAddForm, setShowAddForm] = useState(false);
     const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
-    const [formData, setFormData] = useState({ id: '', name: '', visi: '', misi: '', hasVoted: false });
+    const [formData, setFormData] = useState({ id: '', name: '', visi: '', misi: '' });
     const [searchQuery, setSearchQuery] = useState('');
     const [currentView, setCurrentView] = useState<'validCandidate' | 'candidateHistory'>('validCandidate');
 
@@ -52,7 +50,7 @@ const CandidateScreen = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get<CandidateHistory[]>('http://192.168.0.107:3000/all-candidate-histories');
+            const response = await axios.get<CandidateHistory[]>('http://192.168.0.103:3000/all-candidate-histories');
             console.log('Candidate Histories:', response.data);
             setCandidateHistoryData(response.data);
         } catch (error) {
@@ -70,7 +68,7 @@ const CandidateScreen = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get<{ error: boolean; message: string; candidates: Candidate[] }>('http://192.168.0.107:3000/candidates');
+            const response = await axios.get<{ error: boolean; message: string; candidates: Candidate[] }>('http://192.168.0.103:3000/candidates');
             console.log('Candidates:', response.data);
             setCandidateData(response.data.candidates);
         } catch (error) {
@@ -99,7 +97,7 @@ const CandidateScreen = () => {
         if (!selectedCandidate) return;
         try {
             setLoading(true);
-            await axios.put(`http://192.168.0.107:3000/candidates/${selectedCandidate.id.hex}`, formData);
+            await axios.put(`http://192.168.0.103:3000/candidates/${selectedCandidate.id.hex}`, formData);
             Alert.alert('Success', 'Candidate updated successfully');
             setShowUpdateForm(false);
             fetchCandidates(); // Refresh the data
@@ -117,7 +115,7 @@ const CandidateScreen = () => {
     const addCandidate = async () => {
         try {
             setLoading(true);
-            const existingCandidates = await axios.get<{ error: boolean; message: string; candidates: Candidate[] }>('http://192.168.0.107:3000/candidates');
+            const existingCandidates = await axios.get<{ error: boolean; message: string; candidates: Candidate[] }>('http://192.168.0.103:3000/candidates');
             const existingIds = existingCandidates.data.candidates.map(candidate => candidate.id.hex);
 
             if (existingIds.includes(formData.id)) {
@@ -126,13 +124,13 @@ const CandidateScreen = () => {
                 return;
             }
 
-            await axios.post('http://192.168.0.107:3000/candidates', formData);
+            await axios.post('http://192.168.0.103:3000/candidates', formData);
             Alert.alert('Success', 'Candidate added successfully');
             setShowAddForm(false);
             fetchCandidates(); // Refresh the data
             fetchCandidateHistories(); // Refresh the voter history data
             setFilteredData(currentView === 'validCandidate' ? candidateData : candidateHistoryData);
-            setFormData({ id: '', name: '', visi: '', misi: '', hasVoted: false }); // Reset form data
+            setFormData({ id: '', name: '', visi: '', misi: '' }); // Reset form data
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 setError(error.message);
@@ -147,7 +145,7 @@ const CandidateScreen = () => {
     const deleteCandidate = async (id: string) => {
         try {
             setLoading(true);
-            await axios.delete(`http://192.168.0.107:3000/candidates/${id}`);
+            await axios.delete(`http://192.168.0.103:3000/candidates/${id}`);
             Alert.alert('Success', 'Candidate deleted successfully');
             fetchCandidates(); // Refresh the data
         } catch (error) {
@@ -164,7 +162,7 @@ const CandidateScreen = () => {
     const renderItem = ({ item }: { item: Candidate | CandidateHistory }) => {
         if (Array.isArray(item)) {
             // Handling CandidateHistory
-            const [id, name, visi, misi, lastUpdated, hasVoted] = item;
+            const [id, name, visi, misi, lastUpdated] = item;
             return (
                 <View style={styles.item}>
                     <Text>ID: {id ? BigNumber.from(id.hex).toString() : 'N/A'}</Text>
@@ -184,12 +182,16 @@ const CandidateScreen = () => {
                     <Text>Misi: {item.misi}</Text>
                     <Text>Last Updated: {item.lastUpdated ? formatDateTime(item.lastUpdated.hex) : 'Invalid date'}</Text>
                     <View style={styles.buttonContainer}>
-                        <Button title="Update" onPress={() => {
+                        <TouchableOpacity style={styles.updateButton} onPress={() => {
                             setSelectedCandidate(item);
-                            setFormData({ id: item.id.hex, name: item.name, visi: item.visi, misi: item.misi, hasVoted: item.hasVoted });
+                            setFormData({ id: item.id.hex, name: item.name, visi: item.visi, misi: item.misi });
                             setShowUpdateForm(true);
-                        }} />
-                        <Button title="Delete" onPress={() => deleteCandidate(item.id.hex)} color="red" />
+                        }}>
+                            <Text style={styles.buttonText}>Update</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.deleteButton} onPress={() => deleteCandidate(item.id.hex)}>
+                            <Text style={styles.buttonText}>Delete</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             );
@@ -204,21 +206,19 @@ const CandidateScreen = () => {
         } else {
             filteredData = (currentView === 'validCandidate' ? candidateData : candidateHistoryData).filter(item => {
                 if (Array.isArray(item)) {
-                    const [id, name, visi, misi, hasVoted] = item;
+                    const [id, name, visi, misi] = item;
                     return (
                         name.toLowerCase().includes(text.toLowerCase()) ||
                         BigNumber.from(id.hex).toString().includes(text) ||
                         visi.toLowerCase().includes(text.toLowerCase()) ||
-                        misi.toLowerCase().includes(text.toLowerCase()) ||
-                        hasVoted.toString().toLowerCase().includes(text.toLowerCase())
+                        misi.toLowerCase().includes(text.toLowerCase())
                     );
                 } else {
                     return (
                         item.name.toLowerCase().includes(text.toLowerCase()) ||
                         BigNumber.from(item.id.hex).toString().includes(text) ||
                         item.visi.toLowerCase().includes(text.toLowerCase()) ||
-                        item.misi.toLowerCase().includes(text.toLowerCase()) ||
-                        item.hasVoted.toString().toLowerCase().includes(text.toLowerCase())
+                        item.misi.toLowerCase().includes(text.toLowerCase())
                     );
                 }
             });
@@ -305,8 +305,12 @@ const CandidateScreen = () => {
                         multiline
                         numberOfLines={4}
                     />
-                    <Button title="Submit" onPress={updateCandidate} />
-                    <Button title="Cancel" onPress={() => setShowUpdateForm(false)} />
+                    <TouchableOpacity style={styles.updateButton} onPress={updateCandidate}>
+                        <Text style={styles.buttonText}>Submit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.cancelButton} onPress={() => setShowUpdateForm(false)}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
                 </View>
             )}
             {showAddForm && (
@@ -340,17 +344,23 @@ const CandidateScreen = () => {
                         multiline
                         numberOfLines={4}
                     />
-                    <Button title="Submit" onPress={addCandidate} />
-                    <Button title="Cancel" onPress={() => {
+                    <TouchableOpacity style={styles.updateButton} onPress={addCandidate}>
+                        <Text style={styles.buttonText}>Submit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.cancelButton} onPress={() => {
                         setShowAddForm(false);
-                        setFormData({ id: '', name: '', visi: '', misi: '', hasVoted: false }); // Reset form data on cancel
-                    }} />
+                        setFormData({ id: '', name: '', visi: '', misi: '' }); // Reset form data on cancel
+                    }}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
                 </View>
             )}
-            <Button title="Add New Candidate" onPress={() => {
+            <TouchableOpacity style={styles.addButton} onPress={() => {
                 setShowAddForm(true);
-                setFormData({ id: '', name: '', visi: '', misi: '', hasVoted: false }); // Reset form data before showing add form
-            }} />
+                setFormData({ id: '', name: '', visi: '', misi: '' }); // Reset form data before showing add form
+            }}>
+                <Text style={styles.buttonText}>Add New Candidate</Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -378,7 +388,7 @@ const styles = StyleSheet.create({
     },
     searchBar: {
         height: 40,
-        borderColor: 'gray',
+        borderColor: '#EC8638',
         borderWidth: 1,
         marginBottom: 16,
         paddingHorizontal: 8,
@@ -418,15 +428,48 @@ const styles = StyleSheet.create({
     },
     activeTab: {
         borderBottomWidth: 2,
-        borderBottomColor: '#000',
+        borderBottomColor: '#EC8638',
     },
     inactiveTab: {
         borderBottomWidth: 1,
-        borderBottomColor: 'gray',
+        borderBottomColor: 'rgba(242, 203, 168, 0.7)',
     },
     tabText: {
         fontSize: 16,
         fontWeight: 'bold',
+        color: '#EC8638',
+    },
+    updateButton: {
+        backgroundColor: '#EC8638',
+        padding: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    deleteButton: {
+        backgroundColor: 'gray',
+        padding: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    cancelButton: {
+        backgroundColor: 'gray',
+        padding: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    addButton: {
+        backgroundColor: '#EC8638',
+        padding: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginTop: 16,
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 15,
     },
 });
 

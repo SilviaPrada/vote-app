@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, BackHandler, Alert } from 'react-native';
+import { View, Image, Text, StyleSheet, TouchableOpacity, BackHandler, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigations/user/StackNavigator';
@@ -71,13 +71,13 @@ const AdminScreen: React.FC<Props> = ({ navigation }) => {
         <Provider>
             <View style={{ flex: 1 }}>
                 <View style={styles.header}>
-                    <Text style={styles.headerText}>Admin</Text>
+                    <Image source={require('../../../assets/logo-text-line-white.png')} style={styles.logo} />
                     <Menu
                         visible={menuVisible}
                         onDismiss={closeMenu}
                         anchor={
                             <TouchableOpacity onPress={openMenu} style={styles.profileIcon}>
-                                <Icon name="ellipsis-v" size={24} color="#000" />
+                                <Icon name="ellipsis-v" size={24} color="#fff" />
                             </TouchableOpacity>
                         }
                     >
@@ -96,7 +96,12 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: 16,
-        backgroundColor: '#f0f0f0',
+        backgroundColor: '#EC8638',
+    },
+    logo: {
+        width: 250,
+        height: 43,
+        resizeMode: 'contain'
     },
     headerText: {
         fontSize: 20,

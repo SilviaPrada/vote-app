@@ -20,7 +20,7 @@ const ProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     useEffect(() => {
         const fetchVoterData = async () => {
             try {
-                const response = await fetch(`http://192.168.0.107:3000/voters/${userId}`);
+                const response = await fetch(`http://192.168.0.103:3000/voters/${userId}`);
                 const data = await response.json();
                 setVoterData(data);
             } catch (error) {
