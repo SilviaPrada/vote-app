@@ -5,6 +5,7 @@ import CandidateScreen from '../../screens/admin/CandidateScreen';
 import VoteCountScreen from '../../screens/admin/VoteCountScreen';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import VoterStackNavigation from './VoterStackNavigation';
+import CandidateStackNavigation from './CandidateStackNavigation';
 
 const Tab = createBottomTabNavigator();
 
@@ -34,7 +35,7 @@ const AdminTabNavigator = () => {
             })}
         >
             <Tab.Screen name="Voter" component={VoterStackNavigation} />
-            <Tab.Screen name="Candidate" component={CandidateScreen} />
+            <Tab.Screen name="Candidate" component={CandidateStackNavigation} />
             <Tab.Screen name="Vote Count" component={VoteCountScreen} />
         </Tab.Navigator>
     );

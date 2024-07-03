@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, FlatList, ActivityIndicator, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput, TouchableOpacity, Dimensions } from 'react-native';
 import axios from 'axios';
 import { BigNumber } from '@ethersproject/bignumber';
 
@@ -121,23 +121,25 @@ const VoteCountScreen: React.FC = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Vote Count Screen</Text>
             <TouchableOpacity style={styles.refreshButton} onPress={fetchVoteCounts}>
                 <Text style={styles.buttonText}>Refresh Vote Counts</Text>
             </TouchableOpacity>
-            {loading && <ActivityIndicator size="large" color="#0000ff" />}
+            {loading && <ActivityIndicator size="large" color="#EC8638" />}
             {error && <Text style={styles.error}>{error}</Text>}
 
             <Text style={styles.subtitle}>Current Vote Counts:</Text>
             <FlatList
                 data={voteCounts}
-                keyExtractor={(item, index) => item.id?.hex ?? index.toString()}
+                keyExtractor={(item) => item.id.hex}
                 renderItem={renderVoteCountItem}
+                contentContainerStyle={styles.listContent}
             />
 
             <TouchableOpacity style={styles.refreshButton} onPress={fetchVoteHistories}>
                 <Text style={styles.buttonText}>Refresh Vote Histories</Text>
             </TouchableOpacity>
+            {loading && <ActivityIndicator size="large" color="#EC8638" />}
+            {error && <Text style={styles.error}>{error}</Text>}
             <Text style={styles.subtitle}>Vote Count History:</Text>
             <TextInput
                 style={styles.searchBar}
@@ -147,8 +149,9 @@ const VoteCountScreen: React.FC = () => {
             />
             <FlatList
                 data={filteredHistories}
-                keyExtractor={(item, index) => item.candidate?.hex ?? index.toString()}
+                keyExtractor={(item) => item.candidate.hex}
                 renderItem={renderVoteHistoryItem}
+                contentContainerStyle={styles.listContent}
             />
         </View>
     );
@@ -183,8 +186,12 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         width: '100%',
         paddingVertical: 8,
+        paddingHorizontal: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#ced4da',
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        marginVertical: 4,
     },
     candidate: {
         fontSize: 18,
@@ -195,9 +202,16 @@ const styles = StyleSheet.create({
         color: '#212529',
     },
     historyItem: {
+        flexDirection: 'column',
+        justifyContent: 'center',
+        width: Dimensions.get('window').width - 32,
         paddingVertical: 8,
+        paddingHorizontal: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#dee2e6',
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        marginVertical: 4,
     },
     historyText: {
         fontSize: 16,
@@ -223,6 +237,10 @@ const styles = StyleSheet.create({
     buttonText: {
         color: 'white',
         fontSize: 15,
+    },
+    listContent: {
+        width: '100%',
+        paddingBottom: 16,
     },
 });
 

@@ -26,15 +26,9 @@ const VoterScreen = () => {
     return (
         <View style={styles.container}>
             {renderHeader()}
-            {loading ? (
-                <ActivityIndicator size="large" color="#0000ff" />
-            ) : error ? (
-                <Text style={styles.errorText}>Error: {error}</Text>
-            ) : (
-                <View style={styles.list}>
-                    {currentView === 'validVoter' ? <ValidVoterScreen /> : <VoterHistoryScreen />}
-                </View>
-            )}
+            <View style={styles.list}>
+                {currentView === 'validVoter' ? <ValidVoterScreen /> : <VoterHistoryScreen />}
+            </View>
         </View>
     );
 };

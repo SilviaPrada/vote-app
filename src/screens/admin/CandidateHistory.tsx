@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert, TextInput, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { BigNumber } from '@ethersproject/bignumber';
 
@@ -8,34 +8,37 @@ type BigNumberType = {
     hex: string;
 };
 
-type VoterHistory = [
+type CandidateHistory = [
     BigNumberType, // id
     string,       // name
-    string,       // email
-    boolean,      // hasVoted
-    string,       // txHash
-    BigNumberType // lastUpdated
+    string,       // visi
+    string,       // misi
+    BigNumberType, // lastUpdated
 ];
 
-const VoterHistoryScreen = () => {
-    const [voterHistoryData, setVoterHistoryData] = useState<VoterHistory[]>([]);
+const CandidateHistoryScreen = () => {
+    const [candidateHistoryData, setCandidateHistoryData] = useState<CandidateHistory[]>([]);
+    const [filteredData, setFilteredData] = useState<CandidateHistory[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [filteredData, setFilteredData] = useState<VoterHistory[]>([]); // Changed from Array<VoterHistory>
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-        fetchVoterHistories();
+        fetchCandidateHistories();
     }, []);
 
-    const fetchVoterHistories = async () => {
+    useEffect(() => {
+        handleSearch(searchQuery);
+    }, [candidateHistoryData, searchQuery]);
+
+    const fetchCandidateHistories = async () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get<VoterHistory[]>('http://192.168.0.103:3000/all-voter-histories');
-            console.log('Voter Histories:', response.data);
-            setVoterHistoryData(response.data);
-            setFilteredData(response.data); // Initialize filteredData with all data
+            const response = await axios.get<CandidateHistory[]>('http://192.168.0.103:3000/all-candidate-histories');
+            console.log('Candidate Histories:', response.data);
+            setCandidateHistoryData(response.data);
+            setFilteredData(response.data); // Initialize filtered data
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 setError(error.message);
@@ -58,14 +61,14 @@ const VoterHistoryScreen = () => {
         }
     };
 
-    const renderItem = ({ item }: { item: VoterHistory }) => {
-        const [id, name, email, hasVoted, txHash, lastUpdated] = item;
+    const renderItem = ({ item }: { item: CandidateHistory }) => {
+        const [id, name, visi, misi, lastUpdated] = item;
         return (
             <View style={styles.item}>
-                <Text>ID: {BigNumber.from(id.hex).toString()}</Text>
+                <Text>ID: {id ? BigNumber.from(id.hex).toString() : 'N/A'}</Text>
                 <Text>Name: {name}</Text>
-                <Text>Has Voted: {hasVoted.toString()}</Text>
-                <Text>Email: {email}</Text>
+                <Text>Visi: {visi}</Text>
+                <Text>Misi: {misi}</Text>
                 <Text>Last Updated: {lastUpdated ? formatDateTime(lastUpdated.hex) : 'Invalid date'}</Text>
             </View>
         );
@@ -74,41 +77,42 @@ const VoterHistoryScreen = () => {
     const handleSearch = (text: string) => {
         setSearchQuery(text);
         if (text === '') {
-            setFilteredData(voterHistoryData); // Reset to all data when search is cleared
+            setFilteredData(candidateHistoryData);
         } else {
-            const filteredData = voterHistoryData.filter(item => {
-                const [id, name, email, hasVoted] = item;
+            const filtered = candidateHistoryData.filter(item => {
+                const [id, name, visi, misi] = item;
                 return (
                     name.toLowerCase().includes(text.toLowerCase()) ||
                     BigNumber.from(id.hex).toString().includes(text) ||
-                    email.toLowerCase().includes(text.toLowerCase()) ||
-                    hasVoted.toString().toLowerCase().includes(text.toLowerCase())
+                    visi.toLowerCase().includes(text.toLowerCase()) ||
+                    misi.toLowerCase().includes(text.toLowerCase())
                 );
             });
-            setFilteredData(filteredData); // Update filtered data based on search
+            setFilteredData(filtered);
         }
     };
 
-    const keyExtractor = (item: VoterHistory, index: number) => {
-        const [id, name, email, hasVoted, txHash, lastUpdated] = item;
-        return `${BigNumber.from(id.hex).toString()}-${name}-${email}-${hasVoted}-${txHash}-${BigNumber.from(lastUpdated.hex).toString()}`;
+    const keyExtractor = (item: CandidateHistory) => {
+        const [id, name, visi, misi, lastUpdated] = item;
+        return `${BigNumber.from(id.hex).toString()}-${name}-${visi}-${misi}-${BigNumber.from(lastUpdated.hex).toString()}`;
     };
+
 
     return (
         <View style={styles.container}>
             <TextInput
                 style={styles.searchBar}
-                placeholder="Search by name, email, status or ID"
+                placeholder="Search by name, vision, mission or ID"
                 value={searchQuery}
-                onChangeText={handleSearch}
+                onChangeText={setSearchQuery}
             />
             {loading ? (
-                <ActivityIndicator size="large" color="#EC8638" />
+                <ActivityIndicator size="large" color="#0000ff" />
             ) : error ? (
                 <Text style={styles.errorText}>Error: {error}</Text>
             ) : (
                 <FlatList
-                    data={filteredData} // Render filteredData instead of voterHistoryData
+                    data={filteredData}
                     renderItem={renderItem}
                     keyExtractor={keyExtractor}
                 />
@@ -147,4 +151,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default VoterHistoryScreen;
+export default CandidateHistoryScreen;
