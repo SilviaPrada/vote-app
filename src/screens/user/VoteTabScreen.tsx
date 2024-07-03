@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     selectedCandidate: {
-        backgroundColor: 'rgba(242, 203, 168, 0.7)', // Example of selected candidate color
+        backgroundColor: '#FAECE0', // Example of selected candidate color
     },
     input: {
         height: 40,

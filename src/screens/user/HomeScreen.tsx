@@ -33,14 +33,6 @@ const HomeScreen: React.FC<Props> = ({ route, navigation }) => {
         navigation.navigate('Profile', { userId: user.userId }); // Pass userId to ProfileScreen
     };
 
-    if (!user) {
-        return (
-            <View style={styles.container}>
-                <Text style={styles.title}>Error: User data not found</Text>
-            </View>
-        );
-    }
-
     return (
         <View style={{ flex: 1 }}>
             <View style={styles.header}>

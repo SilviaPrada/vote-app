@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
     },
     candidateItem: {
-        backgroundColor: 'rgba(242, 203, 168, 0.7)', // Slightly transparent background
+        backgroundColor: '#FAECE0', // Slightly transparent background
         padding: 16,
         marginVertical: 8,
         borderRadius: 8,
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     candidateName: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '600',
         marginBottom: 8,
         color: '#000',
@@ -118,19 +118,19 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     candidateDetailTitle: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '600',
         color: '#EC8638',
-        marginBottom: 5,
+        marginBottom: 3,
     },
     candidateVisi: {
-        fontSize: 16,
+        fontSize: 14,
         fontStyle: 'italic',
         color: '#000',
         textAlign: 'center',
     },
     candidateMisi: {
-        fontSize: 16,
+        fontSize: 14,
         fontStyle: 'italic',
         color: '#000',
     },
