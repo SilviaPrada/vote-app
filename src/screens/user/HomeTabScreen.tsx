@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Dimensions, SafeAreaView } from 'react-native';
 import { useElection } from '../../helper/ElectionContext';
-import { PieChart } from 'react-native-chart-kit';
+import PieChartComponent from '../../component/PieChart';
 
 const HomeTabScreen = () => {
     const { candidates } = useElection();
+    const { width, height } = Dimensions.get('window');
 
     const renderCandidateItem = ({ item }: { item: any }) => {
         const id = parseInt(item.id.hex, 16);
@@ -31,16 +32,16 @@ const HomeTabScreen = () => {
     };
 
     const totalVotes = candidates.reduce((sum, candidate) => sum + parseInt(candidate.voteCount.hex, 16), 0);
-    const chartData = candidates.map(candidate => ({
+    const chartData = candidates.map((candidate, index) => ({
         name: '% ' + candidate.name,
-        population: (parseInt(candidate.voteCount.hex, 16) / totalVotes) * 100,
-        color: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color for each candidate
+        population: totalVotes ? (parseInt(candidate.voteCount.hex, 16) / totalVotes) * 100 : 0,
+        color: ["#96c31f", "#f5a623", "#f05656", "#50e3c2", "#4a90e2"][index % 5],
         legendFontColor: "#7F7F7F",
         legendFontSize: 15
     }));
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Text style={styles.title}>Candidate List</Text>
             <FlatList
                 data={candidates}
@@ -48,40 +49,25 @@ const HomeTabScreen = () => {
                 keyExtractor={(item, index) => `${item.id.hex}-${index}`}
                 contentContainerStyle={styles.listContainer}
                 ListFooterComponent={
-                    <><Text style={styles.title}>Vote Counting Results</Text><PieChart
-                        data={chartData}
-                        width={400} // from react-native
-                        height={220}
-                        chartConfig={{
-                            backgroundColor: '#e26a00',
-                            backgroundGradientFrom: '#fb8c00',
-                            backgroundGradientTo: '#ffa726',
-                            decimalPlaces: 2,
-                            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                            style: {
-                                borderRadius: 16
-                            }
-                        }}
-                        accessor="population"
-                        backgroundColor="transparent"
-                        paddingLeft="0"
-                        absolute /></>
+                    <>
+                        <Text style={styles.title}>Vote Counting Results</Text>
+                        <PieChartComponent data={chartData} />
+                    </>
                 }
             />
-        </View>
+        </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         backgroundColor: '#fff',
+        paddingTop: 10,
     },
     title: {
         fontSize: 24,
-        marginBottom: 16,
+        marginBottom: 6,
         marginTop: 20,
         color: '#EC8638',
         fontWeight: 'bold',
@@ -135,6 +121,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#EC8638',
+        marginBottom: 5,
     },
     candidateVisi: {
         fontSize: 16,
