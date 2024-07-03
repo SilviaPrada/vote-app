@@ -9,6 +9,7 @@ import { RootStackParamList } from './src/navigations/user/StackNavigator';
 import ProfileScreen from './src/screens/user/ProfileScreen';
 import { ElectionProvider } from './src/helper/ElectionContext';
 import AdminTabNavigator from './src/navigations/admin/AdminTabNavigator';
+import VoterStackNavigation from './src/navigations/admin/VoterStackNavigation';
 import AdminScreen from './src/screens/admin/AdminScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();

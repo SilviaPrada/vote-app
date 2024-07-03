@@ -6,6 +6,7 @@ import HomeScreen from '../../screens/user/HomeScreen';
 import AdminScreen from '../../screens/admin/AdminScreen';
 import ProfileScreen from '../../screens/user/ProfileScreen';
 import AdminTabNavigator from '../admin/AdminTabNavigator';
+import VoterStackNavigation from '../admin/VoterStackNavigation';
 
 export type RootStackParamList = {
     Login: undefined;

@@ -4,6 +4,7 @@ import VoterScreen from '../../screens/admin/VoterScreen';
 import CandidateScreen from '../../screens/admin/CandidateScreen';
 import VoteCountScreen from '../../screens/admin/VoteCountScreen';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import VoterStackNavigation from './VoterStackNavigation';
 
 const Tab = createBottomTabNavigator();
 
@@ -32,7 +33,7 @@ const AdminTabNavigator = () => {
                 headerShown: false,
             })}
         >
-            <Tab.Screen name="Voter" component={VoterScreen} />
+            <Tab.Screen name="Voter" component={VoterStackNavigation} />
             <Tab.Screen name="Candidate" component={CandidateScreen} />
             <Tab.Screen name="Vote Count" component={VoteCountScreen} />
         </Tab.Navigator>
