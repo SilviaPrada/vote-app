@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Image, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Image, View, Text, StyleSheet, TouchableOpacity, BackHandler } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigations/user/StackNavigator';
@@ -32,6 +32,24 @@ const ProfileScreen: React.FC<Props> = ({ route, navigation }) => {
             fetchVoterData();
         }
     }, [userId]);
+
+    useEffect(() => {
+        const backAction = () => {
+            if (navigation.canGoBack()) {
+                navigation.goBack();
+            } else {
+                navigation.navigate('Home' as never);
+            }
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, [navigation]);
 
     const handleLogout = async () => {
         await AsyncStorage.removeItem('token');

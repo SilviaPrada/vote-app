@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Image, View, Text, StyleSheet, Button, TouchableOpacity } from 'react-native';
+import { Image, View, Text, StyleSheet, Button, TouchableOpacity, BackHandler, Alert } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigations/user/StackNavigator';
@@ -29,6 +29,20 @@ const HomeScreen: React.FC<Props> = ({ route, navigation }) => {
         checkToken();
     }, [user]);
 
+    useEffect(() => {
+        const backAction = () => {
+            BackHandler.exitApp(); // Langsung keluar dari aplikasi tanpa alert
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, []);
+    
     const handleProfile = () => {
         navigation.navigate('Profile', { userId: user.userId }); // Pass userId to ProfileScreen
     };
