@@ -1,11 +1,30 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, Dimensions, SafeAreaView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, Dimensions, SafeAreaView, TextInput } from 'react-native';
 import { useElection } from '../../helper/ElectionContext';
 import PieChartComponent from '../../component/PieChart';
+import { BigNumber } from '@ethersproject/bignumber';
+import axios from 'axios';
 
 const HomeTabScreen = () => {
     const { candidates } = useElection();
     const { width, height } = Dimensions.get('window');
+    const [searchText, setSearchText] = useState('');
+    const [voteHistories, setVoteHistories] = useState<VoteHistory[]>([]);
+    const [filteredHistories, setFilteredHistories] = useState<VoteHistory[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    interface VoteHistoryItem {
+        hex: string;
+        type: string;
+    }
+
+    interface VoteHistory {
+        key: string;
+        candidate: VoteHistoryItem;
+        count: VoteHistoryItem;
+        timestamp: VoteHistoryItem;
+    }
 
     const renderCandidateItem = ({ item }: { item: any }) => {
         const id = parseInt(item.id.hex, 16);
@@ -15,7 +34,7 @@ const HomeTabScreen = () => {
         const voteCount = parseInt(item.voteCount.hex, 16);
 
         return (
-            <View style={styles.candidateItem}>
+            <View style={styles.candidateItem} key={`${item.id.hex}-${name}`}>
                 <View style={styles.candidateIdCircle}>
                     <Text style={styles.candidateId}>{id}</Text>
                 </View>
@@ -37,22 +56,104 @@ const HomeTabScreen = () => {
         population: totalVotes ? (parseInt(candidate.voteCount.hex, 16) / totalVotes) * 100 : 0,
         color: ["#96c31f", "#f5a623", "#f05656", "#50e3c2", "#4a90e2"][index % 5],
         legendFontColor: "#7F7F7F",
-        legendFontSize: 15
+        legendFontSize: 15,
+        key: `chart-${candidate.name}-${index}`
     }));
+
+    const fetchVoteHistories = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            setVoteHistories([]);
+            const response = await axios.get<VoteHistoryItem[][]>('http://192.168.0.103:3000/all-vote-count-histories');
+            console.log('Vote Histories:', response.data);
+            const formattedHistories = response.data.map((item, index) => ({
+                candidate: item[0],
+                count: item[1],
+                timestamp: item[2],
+                key: `history-${index}`
+            }));
+            setVoteHistories(formattedHistories);
+            setFilteredHistories(formattedHistories);
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                setError(error.message);
+            } else {
+                setError(String(error));
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchVoteHistories();
+    }, []);
+
+    const handleSearch = (text: string) => {
+        setSearchText(text);
+        if (text) {
+            const filtered = voteHistories.filter(history =>
+                BigNumber.from(history.candidate.hex).toString().includes(text)
+            );
+            setFilteredHistories(filtered);
+        } else {
+            setFilteredHistories(voteHistories);
+        }
+    };
+
+    const formatDateTime = (timestamp: string) => {
+        if (!timestamp) return 'Invalid date';
+        try {
+            const unixTimestamp = BigNumber.from(timestamp).toNumber();
+            const dateObj = new Date(unixTimestamp * 1000);
+            return dateObj.toLocaleString(); // Adjust based on your localization preferences
+        } catch (error) {
+            return 'Invalid date';
+        }
+    };
+
+    const renderVoteHistoryItem = ({ item }: { item: VoteHistory }) => (
+        <View style={styles.historyItem} key={item.key}>
+            <Text style={styles.historyText}>Candidate: {item.candidate ? BigNumber.from(item.candidate.hex).toString() : 'N/A'}</Text>
+            <Text style={styles.historyText}>Count: {item.count ? BigNumber.from(item.count.hex).toString() : 'N/A'}</Text>
+            <Text style={styles.historyText}>Timestamp: {item.timestamp ? formatDateTime(item.timestamp.hex) : 'Invalid date'}</Text>
+        </View>
+    );
 
     return (
         <SafeAreaView style={styles.container}>
-            <Text style={styles.title}>Candidate List</Text>
             <FlatList
-                data={candidates}
-                renderItem={renderCandidateItem}
-                keyExtractor={(item, index) => `${item.id.hex}-${index}`}
-                contentContainerStyle={styles.listContainer}
-                ListFooterComponent={
+                data={[]}
+                renderItem={null}
+                ListHeaderComponent={
                     <>
+                        <Text style={styles.title}>Candidate List</Text>
+                        <FlatList
+                            data={candidates}
+                            renderItem={renderCandidateItem}
+                            keyExtractor={(item, index) => `${item.id.hex}-${index}`}
+                            contentContainerStyle={styles.listContainer}
+                        />
                         <Text style={styles.title}>Vote Counting Results</Text>
                         <PieChartComponent data={chartData} />
+                        <View style={styles.voteHistoryContainer}>
+                            <TextInput
+                                style={styles.searchBar}
+                                placeholder="Search by candidate ID"
+                                value={searchText}
+                                onChangeText={handleSearch}
+                            />
+                        </View>
                     </>
+                }
+                ListFooterComponent={
+                    <FlatList
+                        data={filteredHistories}
+                        keyExtractor={(item) => item.key}
+                        renderItem={renderVoteHistoryItem}
+                        contentContainerStyle={styles.listContent}
+                    />
                 }
             />
         </SafeAreaView>
@@ -64,6 +165,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
         paddingTop: 10,
+        padding: 16,
     },
     title: {
         fontSize: 24,
@@ -84,6 +186,7 @@ const styles = StyleSheet.create({
         marginVertical: 8,
         borderRadius: 8,
         marginTop: 13,
+        marginLeft: 10,
         position: 'relative', // Ensure the absolute positioning of the circle works within this container
     },
     candidateIdCircle: {
@@ -138,6 +241,42 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#777',
         marginTop: 4,
+    },
+    historyItem: {
+        flexDirection: 'column',
+        justifyContent: 'center',
+        width: Dimensions.get('window').width - 32,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#EC8638',
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        marginVertical: 4,
+    },
+    historyText: {
+        fontSize: 13,
+        color: '#495057',
+    },
+    searchBar: {
+        height: 40,
+        width: Dimensions.get('window').width - 32,
+        borderColor: '#EC8638',
+        borderWidth: 1,
+        borderRadius: 8,
+        marginBottom: 12,
+        paddingHorizontal: 8,
+        backgroundColor: '#fff',
+    },
+    listContent: {
+        width: '100%',
+        paddingBottom: 16,
+    },
+    voteHistoryContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 16,
+        height: 40,
     },
 });
 
