@@ -2,27 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput, TouchableOpacity, Dimensions } from 'react-native';
 import axios from 'axios';
 import { BigNumber } from '@ethersproject/bignumber';
-
-type BigNumberType = {
-    type: string;
-    hex: string;
-};
-
-interface VoteCount {
-    id: BigNumberType;
-    voteCount: BigNumberType;
-}
-
-interface VoteHistoryItem {
-    hex: string;
-    type: string;
-}
-
-interface VoteHistory {
-    candidate: VoteHistoryItem;
-    count: VoteHistoryItem;
-    timestamp: VoteHistoryItem;
-}
+import { API_URL } from '@env';
+import { VoteCount, VoteHistory, VoteHistoryItem } from '../../types/app';
 
 const VoteCountScreen: React.FC = () => {
     const [voteCounts, setVoteCounts] = useState<VoteCount[]>([]);
@@ -37,7 +18,7 @@ const VoteCountScreen: React.FC = () => {
         setError(null);
         try {
             setVoteCounts([]);
-            const response = await axios.get<{ voteCounts: VoteCount[] }>('http://192.168.0.103:3000/vote-counts');
+            const response = await axios.get<{ voteCounts: VoteCount[] }>(`${API_URL}/vote-counts`);
             console.log('Vote Counts:', response.data);
             setVoteCounts(response.data.voteCounts);
         } catch (error) {
@@ -56,7 +37,7 @@ const VoteCountScreen: React.FC = () => {
         setError(null);
         try {
             setVoteHistories([]);
-            const response = await axios.get<VoteHistoryItem[][]>('http://192.168.0.103:3000/all-vote-count-histories');
+            const response = await axios.get<VoteHistoryItem[][]>(`${API_URL}/all-vote-count-histories`);
             console.log('Vote Histories:', response.data);
             const formattedHistories = response.data.map(item => ({
                 candidate: item[0],

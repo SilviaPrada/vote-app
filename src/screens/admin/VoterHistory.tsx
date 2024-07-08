@@ -2,26 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput } from 'react-native';
 import axios from 'axios';
 import { BigNumber } from '@ethersproject/bignumber';
-
-type BigNumberType = {
-    type: string;
-    hex: string;
-};
-
-type VoterHistory = [
-    BigNumberType, // id
-    string,       // name
-    string,       // email
-    boolean,      // hasVoted
-    string,       // txHash
-    BigNumberType // lastUpdated
-];
+import { API_URL } from '@env';
+import { VoterHistory } from '../../types/app';
 
 const VoterHistoryScreen = () => {
     const [voterHistoryData, setVoterHistoryData] = useState<VoterHistory[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [filteredData, setFilteredData] = useState<VoterHistory[]>([]); // Changed from Array<VoterHistory>
+    const [filteredData, setFilteredData] = useState<VoterHistory[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
@@ -32,10 +20,15 @@ const VoterHistoryScreen = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get<VoterHistory[]>('http://192.168.0.103:3000/all-voter-histories');
-            console.log('Voter Histories:', response.data);
-            setVoterHistoryData(response.data);
-            setFilteredData(response.data); // Initialize filteredData with all data
+            const response = await axios.get<VoterHistory[]>(`${API_URL}/all-voter-histories`);
+            const sortedData = response.data.sort((a, b) => {
+                const lastUpdatedA = BigNumber.from(a[5]?.hex || 0).toNumber();
+                const lastUpdatedB = BigNumber.from(b[5]?.hex || 0).toNumber();
+                return lastUpdatedB - lastUpdatedA;
+            });
+            console.log('Voter Histories:', sortedData);
+            setVoterHistoryData(sortedData);
+            setFilteredData(sortedData);
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 setError(error.message);
@@ -52,7 +45,7 @@ const VoterHistoryScreen = () => {
         try {
             const unixTimestamp = BigNumber.from(timestamp).toNumber();
             const dateObj = new Date(unixTimestamp * 1000);
-            return dateObj.toLocaleString(); // Adjust based on your localization preferences
+            return dateObj.toLocaleString();
         } catch (error) {
             return 'Invalid date';
         }
@@ -74,7 +67,7 @@ const VoterHistoryScreen = () => {
     const handleSearch = (text: string) => {
         setSearchQuery(text);
         if (text === '') {
-            setFilteredData(voterHistoryData); // Reset to all data when search is cleared
+            setFilteredData(voterHistoryData);
         } else {
             const filteredData = voterHistoryData.filter(item => {
                 const [id, name, email, hasVoted] = item;
@@ -85,7 +78,7 @@ const VoterHistoryScreen = () => {
                     hasVoted.toString().toLowerCase().includes(text.toLowerCase())
                 );
             });
-            setFilteredData(filteredData); // Update filtered data based on search
+            setFilteredData(filteredData);
         }
     };
 
@@ -108,7 +101,7 @@ const VoterHistoryScreen = () => {
                 <Text style={styles.errorText}>Error: {error}</Text>
             ) : (
                 <FlatList
-                    data={filteredData} // Render filteredData instead of voterHistoryData
+                    data={filteredData}
                     renderItem={renderItem}
                     keyExtractor={keyExtractor}
                 />

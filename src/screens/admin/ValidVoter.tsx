@@ -2,20 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert, TextInput, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { BigNumber } from '@ethersproject/bignumber';
-
-type BigNumberType = {
-    type: string;
-    hex: string;
-};
-
-type Voter = {
-    id: BigNumberType;
-    name: string;
-    email: string;
-    password?: string;
-    hasVoted: boolean;
-    lastUpdated: BigNumberType;
-};
+import { API_URL } from '@env';
+import { Voter } from '../../types/app';
 
 const ValidVoterScreen = () => {
     const [voterData, setVoterData] = useState<Voter[]>([]);
@@ -40,7 +28,7 @@ const ValidVoterScreen = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get<{ error: boolean; message: string; voters: Voter[] }>('http://192.168.0.103:3000/voters');
+            const response = await axios.get<{ error: boolean; message: string; voters: Voter[] }>(`${API_URL}/voters`);
             console.log('Voters:', response.data);
             setVoterData(response.data.voters);
             setFilteredData(response.data.voters); // Initialize filteredData with all voters
@@ -70,7 +58,7 @@ const ValidVoterScreen = () => {
         if (!selectedVoter) return;
         try {
             setLoading(true);
-            await axios.put(`http://192.168.0.103:3000/voters/${selectedVoter.id.hex}`, formData);
+            await axios.put(`${API_URL}/voters/${selectedVoter.id.hex}`, formData);
             Alert.alert('Success', 'Voter updated successfully');
             setShowUpdateForm(false);
             fetchVoters(); // Refresh the data
@@ -88,7 +76,7 @@ const ValidVoterScreen = () => {
     const addVoter = async () => {
         try {
             setLoading(true);
-            const existingVoters = await axios.get<{ error: boolean; message: string; voters: Voter[] }>('http://192.168.0.103:3000/voters');
+            const existingVoters = await axios.get<{ error: boolean; message: string; voters: Voter[] }>(`${API_URL}/voters`);
             const existingIds = existingVoters.data.voters.map(voter => voter.id.hex);
 
             if (existingIds.includes(formData.id)) {
@@ -97,7 +85,7 @@ const ValidVoterScreen = () => {
                 return;
             }
 
-            await axios.post('http://192.168.0.103:3000/voters', formData);
+            await axios.post(`${API_URL}/voters`, formData);
             Alert.alert('Success', 'Voter added successfully');
             setShowAddForm(false);
             fetchVoters(); // Refresh the voter data
@@ -133,7 +121,7 @@ const ValidVoterScreen = () => {
     const deleteVoter = async (id: string) => {
         try {
             setLoading(true);
-            await axios.delete(`http://192.168.0.103:3000/voters/${id}`);
+            await axios.delete(`${API_URL}/voters/${id}`);
             Alert.alert('Success', 'Voter deleted successfully');
             fetchVoters(); // Refresh the data
         } catch (error) {

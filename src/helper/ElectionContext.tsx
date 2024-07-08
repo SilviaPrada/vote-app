@@ -1,21 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-
-interface Candidate {
-    id: {
-        hex: string;
-    };
-    name: string;
-    visi: string;
-    misi: string;
-    voteCount: {
-        hex: string;
-    };
-}
-
-interface ElectionContextProps {
-    candidates: Candidate[];
-    updateCandidates: () => Promise<void>;
-}
+import { API_URL } from '@env';
+import { Candidate, ElectionContextProps } from '../types/app';
 
 const ElectionContext = createContext<ElectionContextProps | undefined>(undefined);
 
@@ -37,7 +22,7 @@ export const ElectionProvider: React.FC<ElectionProviderProps> = ({ children }) 
     useEffect(() => {
         const fetchCandidates = async () => {
             try {
-                const response = await fetch('http://192.168.0.103:3000/candidates');
+                const response = await fetch(`${API_URL}/candidates`);
                 const data = await response.json();
                 setCandidates(data.candidates);
             } catch (error) {
@@ -50,7 +35,7 @@ export const ElectionProvider: React.FC<ElectionProviderProps> = ({ children }) 
 
     const updateCandidates = async () => {
         try {
-            const response = await fetch('http://192.168.0.103:3000/candidates');
+            const response = await fetch(`${API_URL}/candidates`);
             const data = await response.json();
             setCandidates(data.candidates);
         } catch (error) {

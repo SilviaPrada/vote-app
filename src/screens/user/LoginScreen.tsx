@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, Alert, Image, TouchableOpaci
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigations/user/StackNavigator';
+import { API_URL } from '@env';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -31,7 +32,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         }
 
         try {
-            const response = await fetch('http://192.168.0.103:3000/login', {
+            const response = await fetch(`${API_URL}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

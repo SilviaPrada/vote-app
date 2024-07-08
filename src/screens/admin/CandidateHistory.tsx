@@ -1,20 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, Alert, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TextInput } from 'react-native';
 import axios from 'axios';
 import { BigNumber } from '@ethersproject/bignumber';
-
-type BigNumberType = {
-    type: string;
-    hex: string;
-};
-
-type CandidateHistory = [
-    BigNumberType, // id
-    string,       // name
-    string,       // visi
-    string,       // misi
-    BigNumberType, // lastUpdated
-];
+import { API_URL } from '@env';
+import { CandidateHistory, BigNumberType } from '../../types/app';
 
 const CandidateHistoryScreen = () => {
     const [candidateHistoryData, setCandidateHistoryData] = useState<CandidateHistory[]>([]);
@@ -35,10 +24,15 @@ const CandidateHistoryScreen = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get<CandidateHistory[]>('http://192.168.0.103:3000/all-candidate-histories');
-            console.log('Candidate Histories:', response.data);
-            setCandidateHistoryData(response.data);
-            setFilteredData(response.data); // Initialize filtered data
+            const response = await axios.get<CandidateHistory[]>(`${API_URL}/all-candidate-histories`);
+            const sortedData = response.data.sort((a, b) => {
+                const lastUpdatedA = BigNumber.from((a[4] as BigNumberType)?.hex || 0).toNumber();
+                const lastUpdatedB = BigNumber.from((b[4] as BigNumberType)?.hex || 0).toNumber();
+                return lastUpdatedB - lastUpdatedA;
+            });
+            console.log('Candidate Histories:', sortedData);
+            setCandidateHistoryData(sortedData);
+            setFilteredData(sortedData); // Initialize filtered data
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 setError(error.message);
@@ -55,7 +49,7 @@ const CandidateHistoryScreen = () => {
         try {
             const unixTimestamp = BigNumber.from(timestamp).toNumber();
             const dateObj = new Date(unixTimestamp * 1000);
-            return dateObj.toLocaleString(); // Adjust based on your localization preferences
+            return dateObj.toLocaleString();
         } catch (error) {
             return 'Invalid date';
         }
@@ -65,11 +59,11 @@ const CandidateHistoryScreen = () => {
         const [id, name, visi, misi, lastUpdated] = item;
         return (
             <View style={styles.item}>
-                <Text>ID: {id ? BigNumber.from(id.hex).toString() : 'N/A'}</Text>
+                <Text>ID: {BigNumber.from(id.hex).toString()}</Text>
                 <Text>Name: {name}</Text>
                 <Text>Visi: {visi}</Text>
                 <Text>Misi: {misi}</Text>
-                <Text>Last Updated: {lastUpdated ? formatDateTime(lastUpdated.hex) : 'Invalid date'}</Text>
+                <Text>Last Updated: {formatDateTime(lastUpdated.hex)}</Text>
             </View>
         );
     };
@@ -96,7 +90,6 @@ const CandidateHistoryScreen = () => {
         const [id, name, visi, misi, lastUpdated] = item;
         return `${BigNumber.from(id.hex).toString()}-${name}-${visi}-${misi}-${BigNumber.from(lastUpdated.hex).toString()}`;
     };
-
 
     return (
         <View style={styles.container}>

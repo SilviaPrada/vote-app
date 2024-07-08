@@ -4,6 +4,7 @@ import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigations/user/StackNavigator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '@env';
 
 type ProfileScreenRouteProp = RouteProp<RootStackParamList, 'Profile'>;
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Profile'>;
@@ -20,7 +21,7 @@ const ProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     useEffect(() => {
         const fetchVoterData = async () => {
             try {
-                const response = await fetch(`http://192.168.0.103:3000/voters/${userId}`);
+                const response = await fetch(`${API_URL}/voters/${userId}`);
                 const data = await response.json();
                 setVoterData(data);
             } catch (error) {

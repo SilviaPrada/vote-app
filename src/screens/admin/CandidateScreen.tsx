@@ -4,27 +4,8 @@ import axios from 'axios';
 import { BigNumber } from '@ethersproject/bignumber';
 import ValidCandidateScreen from './ValidCandidate';
 import CandidateHistoryScreen from './CandidateHistory';
-
-type BigNumberType = {
-    type: string;
-    hex: string;
-};
-
-type Candidate = {
-    id: BigNumberType;
-    name: string;
-    visi: string;
-    misi: string;
-    lastUpdated: BigNumberType;
-};
-
-type CandidateHistory = [
-    BigNumberType, // id
-    string,       // name
-    string,       // visi
-    string,       // misi
-    BigNumberType, // lastUpdated
-];
+import { API_URL } from '@env';
+import { Candidate, CandidateHistory } from '../../types/app';
 
 const CandidateScreen = () => {
     const [candidateData, setCandidateData] = useState<Candidate[]>([]);
@@ -52,7 +33,7 @@ const CandidateScreen = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get<CandidateHistory[]>('http://192.168.0.103:3000/all-candidate-histories');
+            const response = await axios.get<CandidateHistory[]>(`${API_URL}/all-candidate-histories`);
             console.log('Candidate Histories:', response.data);
             setCandidateHistoryData(response.data);
         } catch (error) {
@@ -70,7 +51,7 @@ const CandidateScreen = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get<{ error: boolean; message: string; candidates: Candidate[] }>('http://192.168.0.103:3000/candidates');
+            const response = await axios.get<{ error: boolean; message: string; candidates: Candidate[] }>(`${API_URL}/candidates`);
             console.log('Candidates:', response.data);
             setCandidateData(response.data.candidates);
         } catch (error) {
@@ -99,7 +80,7 @@ const CandidateScreen = () => {
         if (!selectedCandidate) return;
         try {
             setLoading(true);
-            await axios.put(`http://192.168.0.103:3000/candidates/${selectedCandidate.id.hex}`, formData);
+            await axios.put(`${API_URL}/candidates/${selectedCandidate.id.hex}`, formData);
             Alert.alert('Success', 'Candidate updated successfully');
             setShowUpdateForm(false);
             fetchCandidates(); // Refresh the data
@@ -117,7 +98,7 @@ const CandidateScreen = () => {
     const addCandidate = async () => {
         try {
             setLoading(true);
-            const existingCandidates = await axios.get<{ error: boolean; message: string; candidates: Candidate[] }>('http://192.168.0.103:3000/candidates');
+            const existingCandidates = await axios.get<{ error: boolean; message: string; candidates: Candidate[] }>(`${API_URL}/candidates`);
             const existingIds = existingCandidates.data.candidates.map(candidate => candidate.id.hex);
 
             if (existingIds.includes(formData.id)) {
@@ -126,7 +107,7 @@ const CandidateScreen = () => {
                 return;
             }
 
-            await axios.post('http://192.168.0.103:3000/candidates', formData);
+            await axios.post(`${API_URL}/candidates`, formData);
             Alert.alert('Success', 'Candidate added successfully');
             setShowAddForm(false);
             fetchCandidates(); // Refresh the data
@@ -147,7 +128,7 @@ const CandidateScreen = () => {
     const deleteCandidate = async (id: string) => {
         try {
             setLoading(true);
-            await axios.delete(`http://192.168.0.103:3000/candidates/${id}`);
+            await axios.delete(`${API_URL}/candidates/${id}`);
             Alert.alert('Success', 'Candidate deleted successfully');
             fetchCandidates(); // Refresh the data
         } catch (error) {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, TextInput, Modal, Button } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useElection } from '../../helper/ElectionContext';
+import { API_URL } from '@env';
 
 const VoteTabScreen = () => {
     // const [candidates, setCandidates] = useState<any[]>([]);
@@ -20,7 +21,7 @@ const VoteTabScreen = () => {
                     throw new Error('User ID not found');
                 }
 
-                const response = await fetch(`http://192.168.0.103:3000/voteStatus/${userId}`);
+                const response = await fetch(`${API_URL}/voteStatus/${userId}`);
                 const data = await response.json();
                 setHasVoted(data.hasVoted);
             } catch (error) {
@@ -38,7 +39,7 @@ const VoteTabScreen = () => {
                 throw new Error('User ID not found');
             }
 
-            const response = await fetch('http://192.168.0.103:3000/vote', {
+            const response = await fetch(`${API_URL}/vote`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

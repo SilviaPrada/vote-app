@@ -4,6 +4,8 @@ import { useElection } from '../../helper/ElectionContext';
 import PieChartComponent from '../../component/PieChart';
 import { BigNumber } from '@ethersproject/bignumber';
 import axios from 'axios';
+import { API_URL } from '@env';
+import { VoteHistoryItem } from '../../types/app';
 
 const HomeTabScreen = () => {
     const { candidates } = useElection();
@@ -13,11 +15,6 @@ const HomeTabScreen = () => {
     const [filteredHistories, setFilteredHistories] = useState<VoteHistory[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    interface VoteHistoryItem {
-        hex: string;
-        type: string;
-    }
 
     interface VoteHistory {
         key: string;
@@ -65,7 +62,7 @@ const HomeTabScreen = () => {
         setError(null);
         try {
             setVoteHistories([]);
-            const response = await axios.get<VoteHistoryItem[][]>('http://192.168.0.103:3000/all-vote-count-histories');
+            const response = await axios.get<VoteHistoryItem[][]>(`${API_URL}/all-vote-count-histories`);
             console.log('Vote Histories:', response.data);
             const formattedHistories = response.data.map((item, index) => ({
                 candidate: item[0],

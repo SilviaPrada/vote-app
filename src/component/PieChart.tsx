@@ -1,18 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
-
-type ChartData = {
-    name: string;
-    population: number;
-    color: string;
-    legendFontColor: string;
-    legendFontSize: number;
-};
-
-type PieChartComponentProps = {
-    data: ChartData[];
-};
+import { PieChartComponentProps } from '../types/app';
 
 const screenWidth = Dimensions.get('window').width;
 
