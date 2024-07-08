@@ -6,6 +6,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 import axios from 'axios';
 import { API_URL } from '@env';
 import { VoteHistoryItem } from '../../types/app';
+import { useFocusEffect } from '@react-navigation/native';
 
 const HomeTabScreen = () => {
     const { candidates } = useElection();
@@ -39,7 +40,7 @@ const HomeTabScreen = () => {
                 <View style={styles.candidateDetails}>
                     <Text style={styles.candidateDetailTitle}>Vision</Text>
                     <Text style={styles.candidateVisi}>{visi}</Text>
-                    <Text style={styles.candidateDetailTitle}>Mision</Text>
+                    <Text style={styles.candidateDetailTitle}>Mission</Text>
                     <Text style={styles.candidateMisi}>{misi}</Text>
                 </View>
                 <Text style={styles.voteCount}>Votes: {voteCount}</Text>
@@ -83,9 +84,11 @@ const HomeTabScreen = () => {
         }
     };
 
-    useEffect(() => {
-        fetchVoteHistories();
-    }, []);
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchVoteHistories();
+        }, [])
+    );
 
     const handleSearch = (text: string) => {
         setSearchText(text);
