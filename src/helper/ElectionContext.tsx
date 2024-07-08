@@ -31,7 +31,7 @@ export const ElectionProvider: React.FC<ElectionProviderProps> = ({ children }) 
         };
 
         fetchCandidates();
-    }, []);
+    }, [candidates]);
 
     const updateCandidates = async () => {
         try {
