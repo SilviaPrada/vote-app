@@ -122,10 +122,12 @@ const ValidCandidateScreen = () => {
         return (
             <View style={styles.item}>
                 <Text>ID: {item.id ? BigNumber.from(item.id.hex).toString() : 'N/A'}</Text>
+                <Text>Block Number: {BigNumber.from(item.blockNumber.hex).toString()}</Text>
                 <Text>Name: {item.name}</Text>
                 <Text>Visi: {item.visi}</Text>
                 <Text>Misi: {item.misi}</Text>
                 <Text>Last Updated: {item.lastUpdated ? formatDateTime(item.lastUpdated.hex) : 'Invalid date'}</Text>
+                <Text>Hash: {item.transactionHash.toString()}</Text>
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.updateButton} onPress={() => {
                         setSelectedCandidate(item);

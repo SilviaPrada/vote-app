@@ -56,14 +56,17 @@ const CandidateHistoryScreen = () => {
     };
 
     const renderItem = ({ item }: { item: CandidateHistory }) => {
-        const [id, name, visi, misi, lastUpdated] = item;
+        const [id, name, visi, misi, voteCount, lastUpdated, transactionHash, blockNumber] = item;
+
         return (
             <View style={styles.item}>
                 <Text>ID: {BigNumber.from(id.hex).toString()}</Text>
+                <Text>Block Number: {BigNumber.from(blockNumber.hex).toString()}</Text>
                 <Text>Name: {name}</Text>
                 <Text>Visi: {visi}</Text>
                 <Text>Misi: {misi}</Text>
-                <Text>Last Updated: {formatDateTime(lastUpdated.hex)}</Text>
+                <Text>Last Updated: {lastUpdated ? formatDateTime(lastUpdated.hex) : 'Invalid date'}</Text>
+                <Text>Hash: {transactionHash.toString()}</Text>
             </View>
         );
     };

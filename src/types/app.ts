@@ -22,6 +22,8 @@ export interface Candidate {
   misi: string;
   voteCount: BigNumberType;
   lastUpdated: BigNumberType;
+  transactionHash: BigNumberType;
+  blockNumber: BigNumberType;
 }
 
 export interface ElectionContextProps {
@@ -30,11 +32,14 @@ export interface ElectionContextProps {
 }
 
 export type CandidateHistory = [
-  BigNumberType, // id
-  string,       // name
-  string,       // visi
-  string,       // misi
-  BigNumberType  // lastUpdated
+  BigNumberType,
+  string,       
+  string,       
+  string,       
+  BigNumberType, 
+  BigNumberType,  
+  BigNumberType, 
+  BigNumberType 
 ];
 
 export type Voter = {
@@ -44,11 +49,15 @@ export type Voter = {
   password?: string;
   hasVoted: boolean;
   lastUpdated: BigNumberType;
+  transactionHash: BigNumberType;
+  blockNumber: BigNumberType;
 };
 
 export interface VoteCount {
   id: BigNumberType;
   voteCount: BigNumberType;
+  transactionHash: BigNumberType;
+  blockNumber: BigNumberType;
 }
 
 export interface VoteHistoryItem {
@@ -60,13 +69,17 @@ export interface VoteHistory {
   candidate: VoteHistoryItem;
   count: VoteHistoryItem;
   timestamp: VoteHistoryItem;
+  transactionHash: BigNumberType;
+  blockNumber: BigNumberType;
 }
 
 export type VoterHistory = [
-  BigNumberType, // id
-  string,        // name
-  string,        // email
-  boolean,       // hasVoted
-  string,        // txHash
-  BigNumberType  // lastUpdated
+  BigNumberType, 
+  string,        
+  string,      
+  boolean,    
+  BigNumberType, 
+  BigNumberType,  
+  BigNumberType,
+  BigNumberType
 ];

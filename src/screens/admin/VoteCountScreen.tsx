@@ -43,6 +43,8 @@ const VoteCountScreen: React.FC = () => {
                 candidate: item[0],
                 count: item[1],
                 timestamp: item[2],
+                transactionHash: item[3],
+                blockNumber: item[4]
             }));
             setVoteHistories(formattedHistories);
             setFilteredHistories(formattedHistories);
@@ -83,8 +85,10 @@ const VoteCountScreen: React.FC = () => {
     const renderVoteHistoryItem = ({ item }: { item: VoteHistory }) => (
         <View style={styles.historyItem}>
             <Text style={styles.historyText}>Candidate: {item.candidate ? BigNumber.from(item.candidate.hex).toString() : 'N/A'}</Text>
-            <Text style={styles.historyText}>Count: {item.count ? BigNumber.from(item.count.hex).toString() : 'N/A'}</Text>
+            <Text style={styles.historyText}>Votes: {item.count ? BigNumber.from(item.count.hex).toString() : 'N/A'}</Text>
+            <Text style={styles.historyText}>Block Number: {item.blockNumber ? BigNumber.from(item.blockNumber.hex).toString() : 'N/A'}</Text>
             <Text style={styles.historyText}>Timestamp: {item.timestamp ? formatDateTime(item.timestamp.hex) : 'Invalid date'}</Text>
+            <Text style={styles.historyText}>Hash: {item.transactionHash ? item.transactionHash.toString() : 'N/A'}</Text>
         </View>
     );
 

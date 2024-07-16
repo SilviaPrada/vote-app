@@ -52,14 +52,16 @@ const VoterHistoryScreen = () => {
     };
 
     const renderItem = ({ item }: { item: VoterHistory }) => {
-        const [id, name, email, hasVoted, txHash, lastUpdated] = item;
+        const [id, name, email, hasVoted, pass, lastUpdated, transactionHash, blockNumber] = item;
         return (
             <View style={styles.item}>
                 <Text>ID: {BigNumber.from(id.hex).toString()}</Text>
+                <Text>Block Number: {BigNumber.from(blockNumber.hex).toString()}</Text>
                 <Text>Name: {name}</Text>
                 <Text>Has Voted: {hasVoted.toString()}</Text>
                 <Text>Email: {email}</Text>
                 <Text>Last Updated: {lastUpdated ? formatDateTime(lastUpdated.hex) : 'Invalid date'}</Text>
+                <Text>Hash: {transactionHash.toString()}</Text>
             </View>
         );
     };

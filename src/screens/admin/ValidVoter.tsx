@@ -139,10 +139,12 @@ const ValidVoterScreen = () => {
         return (
             <View style={styles.item}>
                 <Text>ID: {BigNumber.from(item.id.hex).toString()}</Text>
+                <Text>Block Number: {BigNumber.from(item.blockNumber.hex).toString()}</Text>
                 <Text>Name: {item.name}</Text>
                 <Text>Email: {item.email}</Text>
                 <Text>Has Voted: {item.hasVoted.toString()}</Text>
                 <Text>Last Updated: {item.lastUpdated ? formatDateTime(item.lastUpdated.hex) : 'Invalid date'}</Text>
+                <Text>Hash: {item.transactionHash.toString()}</Text>
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.updateButton} onPress={() => {
                         setSelectedVoter(item);
